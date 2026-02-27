@@ -151,7 +151,7 @@ let clipLengths = [0.8, 2, 4, 7, 12, 18];
 let currentAttempt = 0;
 let attemptsLeft = 6;
 let hasUserInteracted = false;
-let currentStartTime = null;   // ← zapamiętuje dokładny start
+let currentStartTime = null;
 
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
 const barsCount = 10;
@@ -247,7 +247,10 @@ async function loadPlaylistSongs() {
       }
       nextPageToken = data.nextPageToken || '';
     } while (nextPageToken);
-
+    if (allPlaylistSongs.length === 0) {
+      status.textContent = 'Playlista pusta lub niedostępna';
+      return;
+    }
     status.textContent = `Załadowano ${allPlaylistSongs.length} utworów – start!`;
     loadNextSong();
   } catch (err) {
@@ -264,7 +267,6 @@ function loadNextSong() {
   const idx = Math.floor(Math.random() * allPlaylistSongs.length);
   currentSong = allPlaylistSongs[idx];
   document.getElementById('status').textContent = 'Słuchaj...';
-
   if (player) {
     player.loadVideoById(currentSong.videoId);
   } else {
@@ -320,24 +322,29 @@ function playClip(isFirst = false) {
   player.pauseVideo();           // natychmiast zatrzymujemy wszystko
   player.seekTo(startTime, true); // ustawiamy pozycję
 
-  // Czekamy na bufor + odmutowujemy
+  // Czekamy na bufor + odmutowujemy (600 ms – maksymalny bezpieczny delay)
   setTimeout(() => {
     player.unMute();
     player.playVideo();
-  }, 550);
+  }, 600);
 
   // Drugi seek
   setTimeout(() => {
     player.seekTo(startTime, true);
-  }, 850);
+  }, 900);
 
-  // Trzeci seek + zabezpieczenie
+  // Trzeci seek
+  setTimeout(() => {
+    player.seekTo(startTime, true);
+  }, 1300);
+
+  // Czwarty seek + zabezpieczenie po 2 s
   setTimeout(() => {
     player.seekTo(startTime, true);
     if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
       player.playVideo();
     }
-  }, 1400);
+  }, 2000);
 
   const duration = isFirst ? clipLengths[0] : clipLengths[currentAttempt];
 
