@@ -134,7 +134,7 @@
     .fail    { color: #f85149; }
     .reveal  { color: #f0c674; font-style: italic; }
 
-    /* Tabelka prób – czarne pudełko z liniami */
+    /* Tabelka prób – pojawia się wiersz po wierszu */
     .history-table {
       width: 100%;
       margin: 24px auto 0;
@@ -144,6 +144,11 @@
       border-radius: 8px;
       overflow: hidden;
       font-size: 0.95em;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .history-table.visible {
+      opacity: 1;
     }
     .history-table th, .history-table td {
       padding: 10px 12px;
@@ -161,6 +166,15 @@
     .history-table .current {
       background: rgba(145,70,255,0.12);
       font-weight: bold;
+    }
+    .history-table tr {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.4s ease;
+    }
+    .history-table tr.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
@@ -187,7 +201,7 @@
 
   <div id="message"></div>
 
-  <!-- Tabelka prób – 6 wierszy dokładnie jak na screenie -->
+  <!-- Tabelka prób – zaczyna pusta, wiersze pojawiają się po kolei -->
   <table class="history-table" id="historyTable">
     <thead>
       <tr>
@@ -196,14 +210,7 @@
         <th>Twój wpis</th>
       </tr>
     </thead>
-    <tbody>
-      <tr><td>1</td><td>0.8 s</td><td>–</td></tr>
-      <tr><td>2</td><td>2 s</td><td>–</td></tr>
-      <tr><td>3</td><td>4 s</td><td>–</td></tr>
-      <tr><td>4</td><td>7 s</td><td>–</td></tr>
-      <tr><td>5</td><td>12 s</td><td>–</td></tr>
-      <tr><td>6</td><td>18 s</td><td>–</td></tr>
-    </tbody>
+    <tbody></tbody>
   </table>
 </div>
 
@@ -220,7 +227,7 @@ let currentAttempt = 0;
 let attemptsLeft = 6;
 let hasUserInteracted = false;
 let recentSongs = [];
-let currentStartTime = null; // klucz do powtarzalności
+let currentStartTime = null;
 
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
 const barsCount = 10;
@@ -418,7 +425,6 @@ function playClip(isFirst = false) {
 
   player.playVideo();
 
-  // Podwójny seek – bardzo skuteczny trik
   setTimeout(() => {
     player.seekTo(startTime, true);
   }, 200);
@@ -467,7 +473,8 @@ function checkGuess() {
     msg.innerHTML += '<br><span class="fail">Nie tym razem...</span>';
   }
 
-  addToHistory(val, isCorrect);
+  // Dodajemy wiersz do tabelki dopiero teraz
+  addHistoryRow(currentAttempt + 1, clipLengths[currentAttempt], val, isCorrect);
 
   setTimeout(loadSong, 3000);
 
@@ -480,7 +487,8 @@ function skipSong() {
   revealSong();
   msg.innerHTML += '<br><span class="fail">Pominięto</span>';
 
-  addToHistory('pominięto', false);
+  // Dodajemy wiersz dla pominięcia
+  addHistoryRow(currentAttempt + 1, clipLengths[currentAttempt], 'pominięto', false);
 
   setTimeout(loadSong, 3000);
 }
@@ -506,20 +514,34 @@ function revealSong() {
   msg.innerHTML = `<span class="reveal">${artist} – ${title}</span>`;
 }
 
-function addToHistory(guessText, isCorrect) {
-  const rowIndex = currentAttempt;
+function addHistoryRow(attempt, duration, guessText, isCorrect) {
   const tbody = document.querySelector('#historyTable tbody');
-  const rows = tbody.querySelectorAll('tr');
+  const tr = document.createElement('tr');
 
-  if (rows[rowIndex]) {
-    const cells = rows[rowIndex].querySelectorAll('td');
-    cells[2].textContent = guessText || '(brak wpisu)';
-    if (isCorrect) {
-      rows[rowIndex].style.background = 'rgba(86,211,100,0.15)';
-    } else if (guessText !== 'pominięto') {
-      rows[rowIndex].style.background = 'rgba(248,81,73,0.15)';
-    }
+  tr.innerHTML = `
+    <td>${attempt}</td>
+    <td>${duration}s</td>
+    <td>${guessText || '(brak wpisu)'}</td>
+  `;
+
+  if (isCorrect) {
+    tr.style.background = 'rgba(86,211,100,0.15)';
+  } else if (guessText !== 'pominięto') {
+    tr.style.background = 'rgba(248,81,73,0.15)';
   }
+
+  // Pokazujemy wiersz z animacją
+  tr.style.opacity = '0';
+  tr.style.transform = 'translateY(10px)';
+  tbody.appendChild(tr);
+
+  // Najpierw pokazujemy całą tabelkę (jeśli to pierwszy wiersz)
+  document.getElementById('historyTable').classList.add('visible');
+
+  // Po chwili animacja wiersza
+  setTimeout(() => {
+    tr.classList.add('visible');
+  }, 50);
 }
 
 function resetGame() {
@@ -532,14 +554,13 @@ function resetGame() {
   document.getElementById('longerBtn').style.display = 'none';
   hideSuggestions();
 
+  // Czyścimy tabelkę i chowamy ją
   const tbody = document.querySelector('#historyTable tbody');
-  const rows = tbody.querySelectorAll('tr');
-  rows.forEach(row => {
-    row.style.background = '';
-    row.querySelector('td:last-child').textContent = '–';
-  });
+  tbody.innerHTML = '';
+  document.getElementById('historyTable').classList.remove('visible');
 }
 
+// Podpowiedzi – od 1 litery
 const guessInput = document.getElementById('guess');
 guessInput.addEventListener('input', () => showSuggestions(guessInput.value.trim()));
 guessInput.addEventListener('focus', () => showSuggestions(guessInput.value.trim()));
