@@ -5,37 +5,122 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Co To Za Hit? – Twoja Playlista</title>
   <style>
-    /* Twój oryginalny styl – bez zmian */
-    body { font-family: Arial, sans-serif; background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364); color: #e0e0e0; margin: 0; padding: 20px; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-    .container { background: rgba(0,0,0,0.65); padding: 30px; border-radius: 16px; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.7); position: relative; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+      color: #e0e0e0;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      background: rgba(0,0,0,0.65);
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      position: relative;
+    }
     h1 { margin: 0 0 16px; font-size: 2.4em; color: #ff79c6; }
     #status { font-size: 1.1em; margin: 12px 0 20px; color: #4ade80; font-weight: bold; }
-    .audio-bars { height: 60px; display: flex; align-items: flex-end; justify-content: center; gap: 5px; margin: 16px auto 24px; width: 90%; max-width: 360px; }
-    .bar { width: 8px; background: linear-gradient(to top, #ff79c6, #a78bfa, #4ade80); border-radius: 4px 4px 0 0; transition: height 0.4s ease-out; opacity: 0.85; }
+    .audio-bars {
+      height: 60px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 5px;
+      margin: 16px auto 24px;
+      width: 90%;
+      max-width: 360px;
+    }
+    .bar {
+      width: 8px;
+      background: linear-gradient(to top, #ff79c6, #a78bfa, #4ade80);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.4s ease-out;
+      opacity: 0.85;
+    }
     .bar.active { animation: pulse 1.3s infinite ease-in-out; }
-    @keyframes pulse { 0%, 100% { transform: scaleY(1); opacity: 0.85; } 50% { transform: scaleY(1.15); opacity: 1; } }
-    .input-wrapper { position: relative; width: 90%; max-width: 420px; margin: 12px auto 20px; }
-    input { width: 100%; padding: 14px; font-size: 1.1em; border: none; border-radius: 10px; background: rgba(255,255,255,0.12); color: white; }
+    @keyframes pulse {
+      0%, 100% { transform: scaleY(1); opacity: 0.85; }
+      50% { transform: scaleY(1.15); opacity: 1; }
+    }
+    .input-wrapper {
+      position: relative;
+      width: 90%;
+      max-width: 420px;
+      margin: 12px auto 20px;
+    }
+    input {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+    }
     input::placeholder { color: rgba(255,255,255,0.5); }
-    #suggestions { position: absolute; top: 100%; left: 0; right: 0; background: rgba(30,30,50,0.97); border-radius: 0 0 10px 10px; max-height: 320px; overflow-y: auto; z-index: 10; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
-    .suggestion { padding: 12px 16px; cursor: pointer; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.07); transition: background 0.15s; font-size: 0.98em; }
+    #suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      background: rgba(30,30,50,0.97);
+      border-radius: 0 0 10px 10px;
+      max-height: 320px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    .suggestion {
+      padding: 12px 16px;
+      cursor: pointer;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      transition: background 0.15s;
+      font-size: 0.98em;
+    }
     .suggestion:hover { background: rgba(100,100,255,0.22); }
     .suggestion:last-child { border-bottom: none; }
-    .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 16px; }
-    button { padding: 11px 22px; font-size: 1.05em; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: all 0.18s; }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    button {
+      padding: 11px 22px;
+      font-size: 1.05em;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.18s;
+    }
     #checkBtn { background: #6366f1; color: white; }
     #replayBtn { background: #10b981; color: white; }
     #skipBtn { background: #f59e0b; color: white; }
     #longerBtn { background: #8b5cf6; color: white; display: none; }
     button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    #message { font-size: 1.45em; margin: 20px 0 12px; min-height: 1.6em; font-weight: bold; }
+    #message {
+      font-size: 1.45em;
+      margin: 20px 0 12px;
+      min-height: 1.6em;
+      font-weight: bold;
+    }
     .success { color: #34d399; }
     .fail { color: #f87171; }
     .reveal { color: #fbbf24; font-style: italic; }
   </style>
 </head>
 <body>
-
 <div class="container">
   <h1>Co To Za Hit?</h1>
   <div class="audio-bars" id="bars"></div>
@@ -52,7 +137,6 @@
   </div>
   <div id="message"></div>
 </div>
-
 <div id="player" style="width:1px;height:1px;overflow:hidden;position:absolute;"></div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
@@ -65,7 +149,7 @@ let clipLengths = [0.8, 2, 4, 7, 12, 18];
 let currentAttempt = 0;
 let attemptsLeft = 6;
 let hasUserInteracted = false;
-let currentStartTime = null;
+let currentStartTime = null; // zapamiętuje dokładny moment startu
 
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
 const barsCount = 10;
@@ -81,7 +165,6 @@ function initBars() {
     container.appendChild(bar);
   }
 }
-
 function updateBars(progress) {
   const bars = document.querySelectorAll('.bar');
   const activeCount = Math.round(barsCount * (progress / MAX_DURATION));
@@ -95,7 +178,6 @@ function updateBars(progress) {
     }
   });
 }
-
 function showLongerButton() {
   const btn = document.getElementById('longerBtn');
   if (currentAttempt < clipLengths.length - 1) {
@@ -105,7 +187,6 @@ function showLongerButton() {
     btn.style.display = 'none';
   }
 }
-
 function nextLevel() {
   if (currentAttempt < clipLengths.length - 1) {
     currentAttempt++;
@@ -113,7 +194,6 @@ function nextLevel() {
     showLongerButton();
   }
 }
-
 function cleanText(text) {
   if (!text) return '';
   return text.toLowerCase()
@@ -121,16 +201,13 @@ function cleanText(text) {
     .replace(/\s+/g, ' ')
     .trim();
 }
-
 function normalizeForCompare(str) {
   return cleanText(str).replace(/[^a-z0-9ąęłńóśźżąć ]/gi, '').replace(/\s+/g, ' ');
 }
-
 function onYouTubeIframeAPIReady() {
   initBars();
   loadPlaylistSongs();
 }
-
 async function loadPlaylistSongs() {
   const status = document.getElementById('status');
   status.textContent = 'Pobieranie playlisty...';
@@ -177,7 +254,6 @@ async function loadPlaylistSongs() {
     status.textContent = 'Błąd ładowania playlisty';
   }
 }
-
 function loadNextSong() {
   if (allPlaylistSongs.length === 0) {
     document.getElementById('status').textContent = 'Brak utworów';
@@ -218,14 +294,11 @@ function loadNextSong() {
   resetGame();
   setTimeout(() => playClip(true), 1400);
 }
-
 function onPlayerReady(event) {
   console.log('Player gotowy');
 }
-
 function playClip(isFirst = false) {
   if (!player) return;
-
   if (hasUserInteracted) player.unMute();
 
   let startTime;
@@ -237,21 +310,24 @@ function playClip(isFirst = false) {
     startTime = currentStartTime;
   }
 
+  // 1. Najpierw seek i pause – wymuszamy pozycję przed play
   player.seekTo(startTime, true);
+  player.pauseVideo();
 
-  // Czekamy na bufor + unMute przed play – to klucz do dłuższego fragmentu
+  // 2. Czekamy na bufor + unMute przed play
   setTimeout(() => {
     player.unMute();
     player.playVideo();
   }, 300);
 
-  // Trzeci seek po play – maksymalizuje precyzję przy dłuższych fragmentach
+  // 3. Drugi seek po play
   setTimeout(() => {
     player.seekTo(startTime, true);
   }, 500);
 
-  // Automatyczna próba ponownego play jeśli nic nie słychać po 1 s
+  // 4. Trzeci seek + ewentualna ponowna próba play po 1 s (na wszelki wypadek)
   setTimeout(() => {
+    player.seekTo(startTime, true);
     if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
       player.playVideo();
     }
@@ -275,7 +351,6 @@ function playClip(isFirst = false) {
 
   document.getElementById('status').textContent = `Odtwarzam ${duration}s od ${startTime.toFixed(1)}s`;
 }
-
 function checkGuess() {
   if (!hasUserInteracted) {
     hasUserInteracted = true;
@@ -298,14 +373,12 @@ function checkGuess() {
   document.getElementById('guess').value = '';
   hideSuggestions();
 }
-
 function skipSong() {
   const msg = document.getElementById('message');
   revealSong();
   msg.innerHTML += '<br><span class="fail">Pominięto</span>';
   setTimeout(loadNextSong, 3000);
 }
-
 function revealSong() {
   const msg = document.getElementById('message');
   if (!currentSong || !currentSong.rawTitle) {
@@ -322,7 +395,6 @@ function revealSong() {
     .trim() || '???';
   msg.innerHTML = `<span class="reveal">${artist} – ${title}</span>`;
 }
-
 function resetGame() {
   currentAttempt = 0;
   attemptsLeft = 6;
@@ -332,14 +404,13 @@ function resetGame() {
   updateBars(0);
   document.getElementById('longerBtn').style.display = 'none';
   hideSuggestions();
+  currentStartTime = null; // resetujemy dla nowego kawałka
 }
-
 // Podpowiedzi – od 1 litery
 const guessInput = document.getElementById('guess');
 guessInput.addEventListener('input', () => showSuggestions(guessInput.value.trim()));
 guessInput.addEventListener('focus', () => showSuggestions(guessInput.value.trim()));
 guessInput.addEventListener('blur', () => setTimeout(hideSuggestions, 180));
-
 document.addEventListener('click', e => {
   if (!hasUserInteracted) {
     hasUserInteracted = true;
@@ -349,7 +420,6 @@ document.addEventListener('click', e => {
     hideSuggestions();
   }
 });
-
 function showSuggestions(query) {
   const div = document.getElementById('suggestions');
   div.innerHTML = '';
@@ -381,7 +451,6 @@ function showSuggestions(query) {
   });
   div.style.display = 'block';
 }
-
 function hideSuggestions() {
   document.getElementById('suggestions').style.display = 'none';
 }
