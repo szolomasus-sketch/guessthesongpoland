@@ -49,6 +49,29 @@
       color: white;
     }
     input::placeholder { color: rgba(255,255,255,0.5); }
+    #suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: rgba(30,30,50,0.97);
+      border-radius: 0 0 10px 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    .suggestion {
+      padding: 12px 16px;
+      cursor: pointer;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      transition: background 0.15s;
+      font-size: 0.98em;
+    }
+    .suggestion:hover { background: rgba(100,100,255,0.22); }
+    .suggestion:last-child { border-bottom: none; }
     button {
       padding: 12px 28px;
       font-size: 1.1em;
@@ -60,7 +83,8 @@
       transition: all 0.2s;
     }
     #startBtn { background: #9146ff; color: white; }
-    #playBtn { background: #10b981; color: white; }
+    #play08Btn { background: #10b981; color: white; }
+    #play2Btn { background: #10b98188; color: white; }
     #checkBtn { background: #6366f1; color: white; }
     button:hover { transform: scale(1.05); }
     #message {
@@ -85,11 +109,12 @@
 
   <div class="input-wrapper">
     <input type="text" id="guess" placeholder="Wpisz tytuł / artystę..." autocomplete="off">
+    <div id="suggestions"></div>
   </div>
 
   <div>
     <button id="startBtn" onclick="startGame()">Start / odblokuj dźwięk</button>
-    <button id="playBtn" onclick="playClip(0.8)">Odtwórz 0.8 s</button>
+    <button id="play08Btn" onclick="playClip(0.8)">Odtwórz 0.8 s</button>
     <button id="play2Btn" onclick="playClip(2)">Odtwórz 2 s</button>
     <button id="play4Btn" onclick="playClip(4)">Odtwórz 4 s</button>
     <button id="checkBtn" onclick="checkGuess()">Sprawdź</button>
@@ -99,12 +124,18 @@
 </div>
 
 <script>
-const song = {
-  title: "Bruno Mars - Dance With Me",
-  artist: "Bruno Mars",
-  file: "https://raw.githubusercontent.com/szolomasus-sketch/guessthesongpoland/main/Bruno%20Mars%20-%20Dance%20With%20Me%20%5BOfficial%20Audio%5D.m4a"
-};
+// Lista piosenek – na razie tylko Bruno Mars, dodawaj kolejne
+const songs = [
+  {
+    title: "Bruno Mars - Dance With Me",
+    artist: "Bruno Mars",
+    file: "https://raw.githubusercontent.com/szolomasus-sketch/guessthesongpoland/main/Bruno%20Mars%20-%20Dance%20With%20Me%20%5BOfficial%20Audio%5D.m4a"
+  }
+  // Dodaj kolejne utwory tutaj, np.:
+  // { title: "Inny utwór - Artysta", file: "https://raw.githubusercontent.com/szolomasus-sketch/guessthesongpoland/main/Inny%20utwor.mp3" }
+];
 
+let currentSong = songs[0];
 let audio = document.getElementById('audioPlayer');
 let gameStarted = false;
 
@@ -112,7 +143,7 @@ function startGame() {
   if (gameStarted) return;
   gameStarted = true;
   document.getElementById('status').textContent = 'Gotowe – możesz odtwarzać fragmenty';
-  audio.src = song.file;
+  audio.src = currentSong.file;
   audio.load();
 }
 
@@ -144,16 +175,60 @@ function checkGuess() {
   if (!val) return;
 
   const msg = document.getElementById('message');
-  const correct = song.title.toLowerCase().includes(val) || song.artist.toLowerCase().includes(val);
+  const correct = currentSong.title.toLowerCase().includes(val) || currentSong.artist.toLowerCase().includes(val);
 
   if (correct) {
-    msg.innerHTML = `<span class="success">Brawo! To ${song.title} – ${song.artist}</span>`;
+    msg.innerHTML = `<span class="success">Brawo! To ${currentSong.title} – ${currentSong.artist}</span>`;
   } else {
-    msg.innerHTML = `<span class="fail">Nie tym razem...</span><br><span class="reveal">${song.title} – ${song.artist}</span>`;
+    msg.innerHTML = `<span class="fail">Nie tym razem...</span><br><span class="reveal">${currentSong.title} – ${currentSong.artist}</span>`;
   }
 
   audio.pause();
 }
+
+// Wyszukiwarka po jednej literze + sugestie
+function showSuggestions(query) {
+  const div = document.getElementById('suggestions');
+  div.innerHTML = '';
+
+  if (!query || query.length < 1) {
+    div.style.display = 'none';
+    return;
+  }
+
+  const lower = query.toLowerCase();
+  const matches = songs.filter(s => s.title.toLowerCase().includes(lower));
+
+  if (matches.length === 0) {
+    div.style.display = 'none';
+    return;
+  }
+
+  matches.slice(0, 10).forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'suggestion';
+    el.textContent = s.title;
+    el.onclick = () => {
+      document.getElementById('guess').value = s.title;
+      div.style.display = 'none';
+      checkGuess();
+    };
+    div.appendChild(el);
+  });
+
+  div.style.display = 'block';
+}
+
+const guessInput = document.getElementById('guess');
+guessInput.addEventListener('input', () => showSuggestions(guessInput.value.trim()));
+guessInput.addEventListener('focus', () => showSuggestions(guessInput.value.trim()));
+guessInput.addEventListener('blur', () => setTimeout(() => document.getElementById('suggestions').style.display = 'none', 200));
+
+document.addEventListener('click', e => {
+  if (!guessInput.contains(e.target) && !document.getElementById('suggestions').contains(e.target)) {
+    document.getElementById('suggestions').style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
