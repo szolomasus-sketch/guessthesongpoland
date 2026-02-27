@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jaka to melodia – test z GitHub</title>
+  <title>Jaka to melodia – test GitHub</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -65,7 +65,6 @@
     }
     #checkBtn { background: #9146ff; color: white; }
     #replayBtn { background: #10b981; color: white; }
-    #skipBtn { background: #f59e0b; color: white; }
     button:hover { transform: scale(1.05); }
     #message {
       font-size: 1.5em;
@@ -76,6 +75,23 @@
     .success { color: #56d364; }
     .fail { color: #f85149; }
     .reveal { color: #f0c674; font-style: italic; }
+    #player-visible {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 80px;
+      height: 80px;
+      opacity: 0.4;
+      z-index: 9999;
+      background: rgba(0,0,0,0.5);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: white;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -83,7 +99,7 @@
 <div class="container">
   <h1>Jaka to melodia – test GitHub</h1>
 
-  <div id="status">Ładowanie utworu...</div>
+  <div id="status">Kliknij gdziekolwiek na stronie, żeby zacząć</div>
 
   <div id="player-container">
     <audio id="audioPlayer" controls></audio>
@@ -101,54 +117,63 @@
   <div id="message"></div>
 </div>
 
+<!-- Mały widoczny player w rogu – użytkownik musi go zobaczyć i kliknąć raz -->
+<div id="player-visible" onclick="startGame()">Kliknij mnie raz</div>
+
 <script>
-// Dane utworu – możesz dodać więcej w tablicy songs
+// Dane utworu – możesz dodać więcej
 const songs = [
   {
     title: "Bruno Mars - Dance With Me",
     artist: "Bruno Mars",
     file: "https://raw.githubusercontent.com/szolomasus-sketch/guessthesongpoland/main/Bruno%20Mars%20-%20Dance%20With%20Me%20%5BOfficial%20Audio%5D.m4a"
   }
-  // Dodaj kolejne utwory tutaj w przyszłości, np.:
-  // { title: "Inny utwór - Artysta", file: "https://raw.githubusercontent.com/.../nazwa.mp3" }
 ];
 
-let currentSong = songs[0]; // na razie tylko jeden utwór
+let currentSong = songs[0];
 let audio = document.getElementById('audioPlayer');
 let currentStartTime = null;
+let gameStarted = false;
+
+function startGame() {
+  if (gameStarted) return;
+  gameStarted = true;
+  document.getElementById('player-visible').style.display = 'none';
+  document.getElementById('status').textContent = 'Ładowanie utworu...';
+  loadSong();
+}
 
 function loadSong() {
-  document.getElementById('status').textContent = 'Ładowanie utworu...';
   audio.src = currentSong.file;
   audio.load();
   audio.onloadeddata = () => {
-    document.getElementById('status').textContent = 'Słuchaj...';
-    playClip(true);
+    document.getElementById('status').textContent = 'Gotowe – kliknij "Odtwórz ponownie" lub zacznij zgadywać';
   };
   audio.onerror = () => {
-    document.getElementById('status').textContent = 'Błąd ładowania pliku – sprawdź link';
+    document.getElementById('status').textContent = 'Błąd ładowania pliku – sprawdź nazwę i link';
   };
 }
 
-function playClip(isFirst = false) {
-  if (!audio) return;
+function playClip() {
+  if (!audio || !gameStarted) {
+    document.getElementById('status').textContent = 'Kliknij mały kwadrat w rogu lub gdziekolwiek na stronie';
+    return;
+  }
 
-  let startTime;
+  let startTime = currentStartTime;
 
-  if (isFirst || currentStartTime === null) {
-    startTime = Math.max(10, Math.floor(Math.random() * 140)); // losowy start od 10 s
+  if (!startTime) {
+    startTime = Math.max(10, Math.floor(Math.random() * 140));
     currentStartTime = startTime;
-  } else {
-    startTime = currentStartTime;
   }
 
   audio.currentTime = startTime;
   audio.play().catch(err => {
     console.log("Błąd odtwarzania:", err);
-    document.getElementById('status').textContent = 'Kliknij gdzieś na stronie, żeby odblokować dźwięk';
+    document.getElementById('status').textContent = 'Kliknij jeszcze raz na stronę lub player';
   });
 
-  const duration = isFirst ? 0.8 : 2; // na razie tylko 0.8 i 2 s – możesz dodać więcej
+  const duration = 0.8; // na razie tylko 0.8 s – możesz zmienić
 
   let elapsed = 0;
   const interval = setInterval(() => {
@@ -165,35 +190,22 @@ function checkGuess() {
   const val = document.getElementById('guess').value.trim().toLowerCase();
   if (!val) return;
 
+  const msg = document.getElementById('message');
   const correct = currentSong.title.toLowerCase().includes(val) || currentSong.artist.toLowerCase().includes(val);
 
-  const msg = document.getElementById('message');
   if (correct) {
     msg.innerHTML = `<span class="success">Brawo! To ${currentSong.title}</span>`;
   } else {
-    msg.innerHTML = `<span class="fail">Nie tym razem... To było:</span><br><span class="reveal">${currentSong.title}</span>`;
+    msg.innerHTML = `<span class="fail">Nie tym razem...</span><br><span class="reveal">${currentSong.title} – ${currentSong.artist}</span>`;
   }
 
   audio.pause();
-  setTimeout(() => {
-    msg.innerHTML = '';
-    // Jeśli chcesz dodać więcej piosenek – losuj następną
-    // currentSong = songs[Math.floor(Math.random() * songs.length)];
-    // loadSong();
-  }, 4000);
 }
 
-function revealSong() {
-  document.getElementById('message').innerHTML = `<span class="reveal">To było: ${currentSong.title}</span>`;
-}
-
-// Start gry
-window.onload = loadSong;
-
-// Odblokowanie dźwięku po pierwszym kliknięciu na stronę (Chrome/Edge wymagają interakcji)
+// Start – czekamy na kliknięcie
 document.addEventListener('click', () => {
-  if (audio && audio.paused) {
-    audio.play().catch(() => {});
+  if (!gameStarted) {
+    startGame();
   }
 }, { once: true });
 </script>
