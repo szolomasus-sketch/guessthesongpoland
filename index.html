@@ -7,26 +7,36 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
-      color: #e0e0e0;
+      background: #0d1117;
+      color: #c9d1d9;
       margin: 0;
       padding: 20px;
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
     }
     .container {
-      background: rgba(0,0,0,0.65);
+      background: #161b22;
       padding: 30px;
-      border-radius: 16px;
+      border-radius: 12px;
       max-width: 520px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      border: 1px solid #30363d;
     }
-    h1 { margin: 0 0 16px; font-size: 2.6em; color: #ff79c6; }
-    #status { font-size: 1.1em; margin: 12px 0 20px; color: #4ade80; font-weight: bold; }
+    h1 {
+      margin: 0 0 16px;
+      font-size: 2.6em;
+      color: #9146ff;
+      text-shadow: 0 0 10px rgba(145,70,255,0.6);
+    }
+    #status {
+      font-size: 1.1em;
+      margin: 12px 0 20px;
+      color: #a970ff;
+      font-weight: bold;
+    }
 
     .audio-bars {
       height: 60px;
@@ -40,31 +50,40 @@
     }
     .bar {
       width: 8px;
-      background: linear-gradient(to top, #ff79c6, #a78bfa, #4ade80);
+      background: linear-gradient(to top, #9146ff, #a970ff, #b083ff);
       border-radius: 4px 4px 0 0;
       transition: height 0.4s ease-out;
       opacity: 0.85;
     }
     .bar.active { animation: pulse 1.3s infinite ease-in-out; }
-    @keyframes pulse { 0%,100% { transform: scaleY(1); opacity: 0.85; } 50% { transform: scaleY(1.15); opacity: 1; } }
+    @keyframes pulse {
+      0%, 100% { transform: scaleY(1); opacity: 0.85; }
+      50%      { transform: scaleY(1.15); opacity: 1; }
+    }
 
-    .input-wrapper { position: relative; width: 90%; max-width: 420px; margin: 12px auto 20px; }
+    .input-wrapper {
+      position: relative;
+      width: 90%;
+      max-width: 420px;
+      margin: 12px auto 20px;
+    }
     input {
       width: 100%;
       padding: 14px;
       font-size: 1.1em;
-      border: none;
+      border: 1px solid #30363d;
       border-radius: 10px;
-      background: rgba(255,255,255,0.12);
-      color: white;
+      background: #0d1117;
+      color: #c9d1d9;
     }
-    input::placeholder { color: rgba(255,255,255,0.5); }
+    input::placeholder { color: #8b949e; }
 
     #suggestions {
       position: absolute;
       top: 100%;
       left: 0; right: 0;
-      background: rgba(30,30,50,0.97);
+      background: #161b22;
+      border: 1px solid #30363d;
       border-radius: 0 0 10px 10px;
       max-height: 320px;
       overflow-y: auto;
@@ -76,12 +95,11 @@
       padding: 12px 16px;
       cursor: pointer;
       text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      border-bottom: 1px solid #21262d;
       transition: background 0.15s;
       font-size: 0.98em;
     }
-    .suggestion:hover { background: rgba(100,100,255,0.22); }
-    .suggestion:last-child { border-bottom: none; }
+    .suggestion:hover { background: #21262d; }
 
     .buttons {
       display: flex;
@@ -99,11 +117,12 @@
       font-weight: bold;
       transition: all 0.18s;
     }
-    #checkBtn { background: #6366f1; color: white; }
-    #replayBtn { background: #10b981; color: white; }
-    #skipBtn { background: #f59e0b; color: white; }
-    #longerBtn { background: #8b5cf6; color: white; display: none; }
-    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    #checkBtn    { background: #9146ff; color: white; }
+    #replayBtn   { background: #9146ff88; color: white; }
+    #skipBtn     { background: #9146ff55; color: white; }
+    #longerBtn   { background: #9146ff33; color: white; display: none; }
+
+    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(145,70,255,0.4); }
 
     #message {
       font-size: 1.45em;
@@ -111,9 +130,52 @@
       min-height: 1.6em;
       font-weight: bold;
     }
-    .success { color: #34d399; }
-    .fail { color: #f87171; }
-    .reveal { color: #fbbf24; font-style: italic; }
+    .success { color: #56d364; }
+    .fail    { color: #f85149; }
+    .reveal  { color: #f0c674; font-style: italic; }
+
+    /* Tabelka prób – pojawia się wiersz po wierszu */
+    .history-table {
+      width: 100%;
+      margin: 24px auto 0;
+      border-collapse: collapse;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 0.95em;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .history-table.visible {
+      opacity: 1;
+    }
+    .history-table th, .history-table td {
+      padding: 10px 12px;
+      border: 1px solid #30363d;
+      text-align: center;
+    }
+    .history-table th {
+      background: #21262d;
+      color: #c9d1d9;
+      font-weight: bold;
+    }
+    .history-table tr:nth-child(even) {
+      background: rgba(13,17,23,0.7);
+    }
+    .history-table .current {
+      background: rgba(145,70,255,0.12);
+      font-weight: bold;
+    }
+    .history-table tr {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.4s ease;
+    }
+    .history-table tr.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -138,62 +200,25 @@
   </div>
 
   <div id="message"></div>
+
+  <!-- Tabelka prób – zaczyna pusta, wiersze pojawiają się po kolei -->
+  <table class="history-table" id="historyTable">
+    <thead>
+      <tr>
+        <th>Próba</th>
+        <th>Długość</th>
+        <th>Twój wpis</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </div>
 
 <div id="player" style="width:1px;height:1px;overflow:hidden;position:absolute;"></div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-// Pełna lista 45 utworów z playlisty PLDIoUOhQQPlXbO7j5xIlWgqLS_-OUNysq
-// ID + prawdziwe tytuły + artyści (dokładnie jak w YouTube, sprawdzone ręcznie)
-const allPlaylistSongs = [
-  { videoId: "jn6ZnlgfnO4", rawTitle: "Kosa - 1000 MYŚLI #2", rawArtist: "Kosa" },
-  { videoId: "AhNQMjtrHgM", rawTitle: "Baba Hassan, Pusher, Oska030, Luis Estrada - Moment", rawArtist: "Baba Hassan" },
-  { videoId: "rR001X7JQy8", rawTitle: "Baba Hassan, Pusher, Oska030, Luis Estrada, Lotuseffekt - Cali Bags", rawArtist: "Baba Hassan" },
-  { videoId: "dEvG0E1NdTY", rawTitle: "Baba Hassan, Pusher, Oska030, Oil Beatz, @atutowy - Baba Hassan", rawArtist: "Baba Hassan" },
-  { videoId: "uNVBBXa6CB8", rawTitle: "Bedoes 2115, Lanek, Bialas, Taco Hemingway - SAUVAGE", rawArtist: "Bedoes 2115" },
-  { videoId: "fRJcsG7nmtE", rawTitle: "Bedoes 2115, Lanek, Kosa, White 2115 - Wschód (lubię zapierdalać)", rawArtist: "Bedoes 2115" },
-  { videoId: "U_FirAt6UKg", rawTitle: "Taco Hemingway, Bedoes 2115 - 2115", rawArtist: "Taco Hemingway" },
-  { videoId: "npPaN-n7gCk", rawTitle: "Oska030, Baba Hassan - Moment (Remix)", rawArtist: "Oska030" },
-  { videoId: "efQJmUr4wAM", rawTitle: "Baba Hassan - Cali Bags", rawArtist: "Baba Hassan" },
-  { videoId: "4IwqHYcYEQA", rawTitle: "Pusha T, Baba Hassan - Pusha", rawArtist: "Pusha T" },
-  { videoId: "OMkYoXfmlUo", rawTitle: "Luis Estrada - Estrada", rawArtist: "Luis Estrada" },
-  { videoId: "7VLShc83YE0", rawTitle: "Baba Hassan - Baba Hassan", rawArtist: "Baba Hassan" },
-  { videoId: "uPULY6PIRZQ", rawTitle: "Bedoes 2115 - Bedoes 2115", rawArtist: "Bedoes 2115" },
-  { videoId: "8_RrKoBdw0o", rawTitle: "Taco Hemingway - Taco Hemingway", rawArtist: "Taco Hemingway" },
-  { videoId: "w4k_6tUw2mQ", rawTitle: "Oska030 - Oska030", rawArtist: "Oska030" },
-  { videoId: "lqWt5L4hZU4", rawTitle: "Lotuseffekt - Lotuseffekt", rawArtist: "Lotuseffekt" },
-  { videoId: "ScGIPDlJKMY", rawTitle: "Oil Beatz - Oil Beatz", rawArtist: "Oil Beatz" },
-  { videoId: "Ln8rAlXKv7o", rawTitle: "Kosa - Kosa", rawArtist: "Kosa" },
-  { videoId: "HNznlRJZRXw", rawTitle: "White 2115 - White 2115", rawArtist: "White 2115" },
-  { videoId: "8J1stp9AbOk", rawTitle: "Bialas - Bialas", rawArtist: "Bialas" },
-  { videoId: "pKqVj-ermPY", rawTitle: "Lanek - Lanek", rawArtist: "Lanek" },
-  { videoId: "xSPz6uq3c1g", rawTitle: "Taco Hemingway - Taco Hemingway 2", rawArtist: "Taco Hemingway" },
-  { videoId: "I1PjrpN_87U", rawTitle: "Bedoes 2115 - Bedoes 2115 2", rawArtist: "Bedoes 2115" },
-  { videoId: "AeyQI65fJxc", rawTitle: "Baba Hassan - Baba Hassan 2", rawArtist: "Baba Hassan" },
-  { videoId: "Uho7xyVcG5c", rawTitle: "Oska030 - Oska030 2", rawArtist: "Oska030" },
-  { videoId: "tSiOWFwHR4U", rawTitle: "Luis Estrada - Estrada 2", rawArtist: "Luis Estrada" },
-  { videoId: "uNqOIeumhZM", rawTitle: "Lotuseffekt - Lotuseffekt 2", rawArtist: "Lotuseffekt" },
-  { videoId: "mnFj4TB89pA", rawTitle: "Oil Beatz - Oil Beatz 2", rawArtist: "Oil Beatz" },
-  { videoId: "cHmYhFesjGs", rawTitle: "Kosa - Kosa 2", rawArtist: "Kosa" },
-  { videoId: "M-0c2BpBmDQ", rawTitle: "White 2115 - White 2115 2", rawArtist: "White 2115" },
-  { videoId: "TBVQp9d726Q", rawTitle: "Bialas - Bialas 2", rawArtist: "Bialas" },
-  { videoId: "LnNTD1BBe88", rawTitle: "Lanek - Lanek 2", rawArtist: "Lanek" },
-  { videoId: "ESC0fJ263fY", rawTitle: "Taco Hemingway - Taco Hemingway 3", rawArtist: "Taco Hemingway" },
-  { videoId: "fil7T3YMaqs", rawTitle: "Bedoes 2115 - Bedoes 2115 3", rawArtist: "Bedoes 2115" },
-  { videoId: "pk2v0fPfWws", rawTitle: "Baba Hassan - Baba Hassan 3", rawArtist: "Baba Hassan" },
-  { videoId: "Lrf4ZJjbnFE", rawTitle: "Oska030 - Oska030 3", rawArtist: "Oska030" },
-  { videoId: "oT9VM2XQPdI", rawTitle: "Luis Estrada - Estrada 3", rawArtist: "Luis Estrada" },
-  { videoId: "BvRbKY8tloo", rawTitle: "Lotuseffekt - Lotuseffekt 3", rawArtist: "Lotuseffekt" },
-  { videoId: "-6KuSa0zgaA", rawTitle: "Oil Beatz - Oil Beatz 3", rawArtist: "Oil Beatz" },
-  { videoId: "oKa9tnfZwP0", rawTitle: "Kosa - Kosa 3", rawArtist: "Kosa" },
-  { videoId: "4EAv2s8jZgo", rawTitle: "White 2115 - White 2115 3", rawArtist: "White 2115" },
-  { videoId: "bH28HGZ1SMI", rawTitle: "Bialas - Bialas 3", rawArtist: "Bialas" },
-  { videoId: "TeYGpUbmONo", rawTitle: "Lanek - Lanek 3", rawArtist: "Lanek" },
-  { videoId: "Io65ZonGLos", rawTitle: "Taco Hemingway - Taco Hemingway 4", rawArtist: "Taco Hemingway" },
-  { videoId: "HRsEjGOKFm0", rawTitle: "Bedoes 2115 - Bedoes 2115 4", rawArtist: "Bedoes 2115" },
-  { videoId: "iHDJ_xfW26Y", rawTitle: "Baba Hassan - Baba Hassan 4", rawArtist: "Baba Hassan" }
-];
+const API_KEY = 'AIzaSyCjdRB_MCy02NB4ceFmQtDnecvt4HdWskQ';
 
 let player = null;
 let currentSong = {};
@@ -201,6 +226,7 @@ let clipLengths = [0.8, 2, 4, 7, 12, 18];
 let currentAttempt = 0;
 let attemptsLeft = 6;
 let hasUserInteracted = false;
+let recentSongs = [];
 let currentStartTime = null;
 
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
@@ -249,64 +275,132 @@ function nextLevel() {
   }
 }
 
-function cleanText(text) {
-  if (!text) return '';
-  return text.toLowerCase()
-    .replace(/official|video|audio|lyric|teledysk|klip|hd|4k|vevo|feat\.?|ft\.?|×|&|\/|prod\.?|remix|nowość|nowy|202[3-6]|clip|edit/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+function addToRecent(song) {
+  if (!song || !song.rawTitle) return;
+  recentSongs.unshift({
+    rawTitle: song.rawTitle,
+    rawArtist: song.rawArtist || '???',
+    cleanTitle: normalizeForCompare(song.rawTitle),
+    cleanArtist: normalizeForCompare(song.rawArtist || '')
+  });
+  if (recentSongs.length > MAX_SUGGESTIONS) recentSongs.pop();
 }
 
-function normalizeForCompare(str) {
-  return cleanText(str).replace(/[^a-z0-9ąęłńóśźżąć ]/gi, '').replace(/\s+/g, ' ');
+function showSuggestions(query) {
+  const div = document.getElementById('suggestions');
+  div.innerHTML = '';
+
+  if (!query || query.length < 1) {
+    div.style.display = 'none';
+    return;
+  }
+
+  const lower = query.toLowerCase();
+  const matches = recentSongs.filter(s =>
+    s.cleanTitle.includes(lower) ||
+    s.cleanArtist.includes(lower) ||
+    s.rawTitle.toLowerCase().includes(lower) ||
+    s.rawArtist.toLowerCase().includes(lower)
+  );
+
+  if (matches.length === 0) {
+    div.style.display = 'none';
+    return;
+  }
+
+  matches.slice(0, MAX_SUGGESTIONS).forEach(match => {
+    const el = document.createElement('div');
+    el.className = 'suggestion';
+    el.textContent = `${match.rawArtist} – ${match.rawTitle}`.trim().replace(/\s+/g, ' ');
+    el.onclick = () => {
+      document.getElementById('guess').value = el.textContent;
+      div.style.display = 'none';
+      checkGuess();
+    };
+    div.appendChild(el);
+  });
+
+  div.style.display = 'block';
+}
+
+function hideSuggestions() {
+  document.getElementById('suggestions').style.display = 'none';
 }
 
 function onYouTubeIframeAPIReady() {
   initBars();
-  loadNextSong();
+  loadSong();
 }
 
-function loadNextSong() {
+async function loadSong() {
   const status = document.getElementById('status');
   status.textContent = 'Ładowanie...';
 
-  const idx = Math.floor(Math.random() * allPlaylistSongs.length);
-  currentSong = allPlaylistSongs[idx];
+  currentStartTime = null;
 
-  status.textContent = 'Słuchaj...';
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&order=viewCount&q=hit+OR+muzyka+OR+2025+OR+2026+OR+nowość+OR+polska&maxResults=20&regionCode=PL&relevanceLanguage=pl&key=${API_KEY}`;
 
-  if (player) {
-    player.loadVideoById(currentSong.videoId);
-  } else {
-    player = new YT.Player('player', {
-      height: '1',
-      width: '1',
-      videoId: currentSong.videoId,
-      playerVars: {
-        autoplay: 0,
-        controls: 0,
-        modestbranding: 1,
-        rel: 0,
-        fs: 0,
-        mute: 1,
-        enablejsapi: 1,
-        playsinline: 1,
-        disablekb: 1,
-        origin: window.location.origin || 'https://www.youtube.com'
-      },
-      events: {
-        'onReady': onPlayerReady,
-        'onStateChange': e => {
-          if (e.data === YT.PlayerState.PLAYING && hasUserInteracted) {
-            player.unMute();
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.error || !data.items || data.items.length === 0) {
+      status.textContent = 'Problem z API';
+      return;
+    }
+
+    const idx = Math.floor(Math.random() * data.items.length);
+    const video = data.items[idx];
+
+    currentSong = {
+      videoId: video.id.videoId,
+      rawTitle: video.snippet.title || '???',
+      rawArtist: video.snippet.channelTitle || '???',
+      cleanTitle: normalizeForCompare(video.snippet.title || ''),
+      cleanArtist: normalizeForCompare(video.snippet.channelTitle || '')
+    };
+
+    addToRecent(currentSong);
+
+    status.textContent = 'Słuchaj...';
+
+    if (player) {
+      player.loadVideoById(currentSong.videoId);
+    } else {
+      player = new YT.Player('player', {
+        height: '1',
+        width: '1',
+        videoId: currentSong.videoId,
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          fs: 0,
+          mute: 1,
+          enablejsapi: 1,
+          playsinline: 1,
+          disablekb: 1,
+          origin: window.location.origin || 'https://www.youtube.com'
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': e => {
+            if (e.data === YT.PlayerState.PLAYING && hasUserInteracted) {
+              player.unMute();
+            }
           }
         }
-      }
-    });
-  }
+      });
+    }
 
-  resetGame();
-  setTimeout(() => playClip(true), 1400);
+    resetGame();
+    setTimeout(() => playClip(true), 1400);
+
+  } catch (err) {
+    console.error(err);
+    status.textContent = 'Błąd ładowania';
+  }
 }
 
 function onPlayerReady(event) {
@@ -328,6 +422,7 @@ function playClip(isFirst = false) {
   }
 
   player.seekTo(startTime, true);
+
   player.playVideo();
 
   setTimeout(() => {
@@ -378,7 +473,10 @@ function checkGuess() {
     msg.innerHTML += '<br><span class="fail">Nie tym razem...</span>';
   }
 
-  setTimeout(loadNextSong, 3000);
+  // Dodajemy wiersz do tabelki dopiero teraz
+  addHistoryRow(currentAttempt + 1, clipLengths[currentAttempt], val, isCorrect);
+
+  setTimeout(loadSong, 3000);
 
   document.getElementById('guess').value = '';
   hideSuggestions();
@@ -386,12 +484,13 @@ function checkGuess() {
 
 function skipSong() {
   const msg = document.getElementById('message');
-
   revealSong();
+  msg.innerHTML += '<br><span class="fail">Pominięto</span>';
 
-  msg.innerHTML += '<br><span class="fail">Pomiń</span>';
+  // Dodajemy wiersz dla pominięcia
+  addHistoryRow(currentAttempt + 1, clipLengths[currentAttempt], 'pominięto', false);
 
-  setTimeout(loadNextSong, 3000);
+  setTimeout(loadSong, 3000);
 }
 
 function revealSong() {
@@ -415,6 +514,36 @@ function revealSong() {
   msg.innerHTML = `<span class="reveal">${artist} – ${title}</span>`;
 }
 
+function addHistoryRow(attempt, duration, guessText, isCorrect) {
+  const tbody = document.querySelector('#historyTable tbody');
+  const tr = document.createElement('tr');
+
+  tr.innerHTML = `
+    <td>${attempt}</td>
+    <td>${duration}s</td>
+    <td>${guessText || '(brak wpisu)'}</td>
+  `;
+
+  if (isCorrect) {
+    tr.style.background = 'rgba(86,211,100,0.15)';
+  } else if (guessText !== 'pominięto') {
+    tr.style.background = 'rgba(248,81,73,0.15)';
+  }
+
+  // Pokazujemy wiersz z animacją
+  tr.style.opacity = '0';
+  tr.style.transform = 'translateY(10px)';
+  tbody.appendChild(tr);
+
+  // Najpierw pokazujemy całą tabelkę (jeśli to pierwszy wiersz)
+  document.getElementById('historyTable').classList.add('visible');
+
+  // Po chwili animacja wiersza
+  setTimeout(() => {
+    tr.classList.add('visible');
+  }, 50);
+}
+
 function resetGame() {
   currentAttempt = 0;
   attemptsLeft = 6;
@@ -424,6 +553,11 @@ function resetGame() {
   updateBars(0);
   document.getElementById('longerBtn').style.display = 'none';
   hideSuggestions();
+
+  // Czyścimy tabelkę i chowamy ją
+  const tbody = document.querySelector('#historyTable tbody');
+  tbody.innerHTML = '';
+  document.getElementById('historyTable').classList.remove('visible');
 }
 
 // Podpowiedzi – od 1 litery
@@ -452,7 +586,7 @@ function showSuggestions(query) {
   }
 
   const lower = query.toLowerCase();
-  const matches = allPlaylistSongs.filter(s =>
+  const matches = recentSongs.filter(s =>
     s.cleanTitle.includes(lower) ||
     s.cleanArtist.includes(lower) ||
     s.rawTitle.toLowerCase().includes(lower) ||
@@ -483,8 +617,7 @@ function hideSuggestions() {
   document.getElementById('suggestions').style.display = 'none';
 }
 
-// Start gry – od razu ładujemy pierwszą piosenkę
-onYouTubeIframeAPIReady();
 </script>
 </body>
 </html>
+
