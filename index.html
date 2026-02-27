@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jaka to melodia – edycja Twitch</title>
+  <title>Jaka to melodia – test z GitHub</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,43 +17,31 @@
       align-items: center;
     }
     .container {
-      background: rgba(0,0,0,0.65);
+      background: rgba(0,0,0,0.7);
       padding: 30px;
       border-radius: 16px;
       max-width: 520px;
       width: 100%;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-      position: relative;
     }
-    h1 { margin: 0 0 16px; font-size: 2.6em; color: #ff79c6; }
-    #status { font-size: 1.1em; margin: 12px 0 20px; color: #4ade80; font-weight: bold; }
-
-    .audio-bars {
-      height: 60px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      gap: 5px;
-      margin: 16px auto 24px;
-      width: 90%;
-      max-width: 360px;
+    h1 { margin: 0 0 20px; font-size: 2.4em; color: #ff79c6; }
+    #status { font-size: 1.2em; margin: 15px 0; color: #a970ff; font-weight: bold; }
+    #player-container {
+      margin: 20px 0;
+      text-align: center;
     }
-    .bar {
-      width: 8px;
-      background: linear-gradient(to top, #ff79c6, #a78bfa, #4ade80);
-      border-radius: 4px 4px 0 0;
-      transition: height 0.4s ease-out;
-      opacity: 0.85;
+    audio {
+      width: 100%;
+      max-width: 400px;
+      margin: 15px auto;
+      display: block;
     }
-    .bar.active { animation: pulse 1.3s infinite ease-in-out; }
-    @keyframes pulse { 0%,100% { transform: scaleY(1); opacity: 0.85; } 50% { transform: scaleY(1.15); opacity: 1; } }
-
     .input-wrapper {
       position: relative;
       width: 90%;
       max-width: 420px;
-      margin: 12px auto 20px;
+      margin: 20px auto;
     }
     input {
       width: 100%;
@@ -65,56 +53,24 @@
       color: white;
     }
     input::placeholder { color: rgba(255,255,255,0.5); }
-
-    #suggestions {
-      position: absolute;
-      top: 100%;
-      left: 0; right: 0;
-      background: rgba(30,30,50,0.97);
-      border-radius: 0 0 10px 10px;
-      max-height: 320px;
-      overflow-y: auto;
-      z-index: 10;
-      display: none;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    }
-    .suggestion {
-      padding: 12px 16px;
-      cursor: pointer;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-      transition: background 0.15s;
-      font-size: 0.98em;
-    }
-    .suggestion:hover { background: rgba(100,100,255,0.22); }
-    .suggestion:last-child { border-bottom: none; }
-
-    .buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
     button {
-      padding: 11px 22px;
-      font-size: 1.05em;
+      padding: 12px 28px;
+      font-size: 1.1em;
+      margin: 10px;
       border: none;
       border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
-      transition: all 0.18s;
+      transition: all 0.2s;
     }
     #checkBtn { background: #9146ff; color: white; }
-    #replayBtn { background: #9146ff88; color: white; }
-    #skipBtn { background: #9146ff55; color: white; }
-    #longerBtn { background: #9146ff33; color: white; display: none; }
-    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(145,70,255,0.4); }
-
+    #replayBtn { background: #10b981; color: white; }
+    #skipBtn { background: #f59e0b; color: white; }
+    button:hover { transform: scale(1.05); }
     #message {
-      font-size: 1.45em;
-      margin: 20px 0 12px;
-      min-height: 1.6em;
+      font-size: 1.5em;
+      margin: 25px 0;
+      min-height: 1.8em;
       font-weight: bold;
     }
     .success { color: #56d364; }
@@ -125,137 +81,121 @@
 <body>
 
 <div class="container">
-  <h1>Jaka to melodia – edycja Twitch</h1>
+  <h1>Jaka to melodia – test GitHub</h1>
 
-  <div class="audio-bars" id="bars"></div>
+  <div id="status">Ładowanie utworu...</div>
 
-  <div id="status">Ładowanie...</div>
+  <div id="player-container">
+    <audio id="audioPlayer" controls></audio>
+  </div>
 
   <div class="input-wrapper">
     <input type="text" id="guess" placeholder="Wpisz tytuł / artystę..." autocomplete="off">
-    <div id="suggestions"></div>
   </div>
 
-  <div class="buttons">
+  <div>
     <button id="checkBtn" onclick="checkGuess()">Sprawdź</button>
     <button id="replayBtn" onclick="playClip()">Odtwórz ponownie</button>
-    <button id="skipBtn" onclick="skipSong()">Pomiń</button>
-    <button id="longerBtn" onclick="nextLevel()">Dłuższy fragment</button>
   </div>
 
   <div id="message"></div>
 </div>
 
-<!-- Mały widoczny player – to rozwiązuje większość problemów z timingiem -->
-<div id="player" style="position:fixed; bottom:10px; right:10px; width:10px; height:10px; opacity:0.3; z-index:9999;"></div>
-
-<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-// Pełna lista z prawdziwymi tytułami z Twojej playlisty
-const allPlaylistSongs = [
-  { videoId: "jn6ZnlgfnO4", rawTitle: "Kosa - 1000 MYŚLI #2", rawArtist: "Kosa" },
-  { videoId: "AhNQMjtrHgM", rawTitle: "Baba Hassan, Pusher, Oska030, Luis Estrada - Moment", rawArtist: "Baba Hassan" },
-  { videoId: "rR001X7JQy8", rawTitle: "Baba Hassan, Pusher, Oska030, Luis Estrada, Lotuseffekt - Cali Bags", rawArtist: "Baba Hassan" },
-  { videoId: "dEvG0E1NdTY", rawTitle: "Baba Hassan, Pusher, Oska030, Oil Beatz, @atutowy - Baba Hassan", rawArtist: "Baba Hassan" },
-  { videoId: "uNVBBXa6CB8", rawTitle: "Bedoes 2115, Lanek, Bialas, Taco Hemingway - SAUVAGE", rawArtist: "Bedoes 2115" },
-  { videoId: "fRJcsG7nmtE", rawTitle: "Bedoes 2115, Lanek, Kosa, White 2115 - Wschód (lubię zapierdalać)", rawArtist: "Bedoes 2115" },
-  { videoId: "U_FirAt6UKg", rawTitle: "Taco Hemingway, Bedoes 2115 - 2115", rawArtist: "Taco Hemingway" },
-  { videoId: "npPaN-n7gCk", rawTitle: "Oska030, Baba Hassan - Moment (Remix)", rawArtist: "Oska030" },
-  { videoId: "efQJmUr4wAM", rawTitle: "Baba Hassan - Cali Bags", rawArtist: "Baba Hassan" },
-  { videoId: "4IwqHYcYEQA", rawTitle: "Pusha T, Baba Hassan - Pusha", rawArtist: "Pusha T" },
-  // ... (dodałem wszystkie 45, ale dla skrócenia wklejam fragment – resztę masz w poprzednich wiadomościach, mogę dopisać jeśli chcesz)
+// Dane utworu – możesz dodać więcej w tablicy songs
+const songs = [
+  {
+    title: "Bruno Mars - Dance With Me",
+    artist: "Bruno Mars",
+    file: "https://raw.githubusercontent.com/szolomasus-sketch/guessthesongpoland/main/Bruno%20Mars%20-%20Dance%20With%20Me%20%5BOfficial%20Audio%5D.m4a"
+  }
+  // Dodaj kolejne utwory tutaj w przyszłości, np.:
+  // { title: "Inny utwór - Artysta", file: "https://raw.githubusercontent.com/.../nazwa.mp3" }
 ];
 
-let player = null;
-let currentSong = {};
-let clipLengths = [0.8, 2, 4, 7, 12, 18];
-let currentAttempt = 0;
-let hasUserInteracted = false;
+let currentSong = songs[0]; // na razie tylko jeden utwór
+let audio = document.getElementById('audioPlayer');
 let currentStartTime = null;
 
-const MAX_DURATION = clipLengths[clipLengths.length - 1];
-const barsCount = 10;
-
-function initBars() {
-  const container = document.getElementById('bars');
-  container.innerHTML = '';
-  for (let i = 0; i < barsCount; i++) {
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    container.appendChild(bar);
-  }
-}
-
-function updateBars(progress) {
-  const bars = document.querySelectorAll('.bar');
-  const activeCount = Math.round(barsCount * (progress / MAX_DURATION));
-  bars.forEach((bar, i) => {
-    if (i < activeCount) {
-      bar.style.height = `${30 + Math.random() * 70}%`;
-      bar.classList.add('active');
-    } else {
-      bar.style.height = '10%';
-      bar.classList.remove('active');
-    }
-  });
+function loadSong() {
+  document.getElementById('status').textContent = 'Ładowanie utworu...';
+  audio.src = currentSong.file;
+  audio.load();
+  audio.onloadeddata = () => {
+    document.getElementById('status').textContent = 'Słuchaj...';
+    playClip(true);
+  };
+  audio.onerror = () => {
+    document.getElementById('status').textContent = 'Błąd ładowania pliku – sprawdź link';
+  };
 }
 
 function playClip(isFirst = false) {
-  if (!player) return;
-
-  if (hasUserInteracted) player.unMute();
+  if (!audio) return;
 
   let startTime;
 
   if (isFirst || currentStartTime === null) {
-    startTime = Math.max(10, Math.floor(Math.random() * 140));
+    startTime = Math.max(10, Math.floor(Math.random() * 140)); // losowy start od 10 s
     currentStartTime = startTime;
   } else {
     startTime = currentStartTime;
   }
 
-  player.seekTo(startTime, true);
-  player.pauseVideo();
+  audio.currentTime = startTime;
+  audio.play().catch(err => {
+    console.log("Błąd odtwarzania:", err);
+    document.getElementById('status').textContent = 'Kliknij gdzieś na stronie, żeby odblokować dźwięk';
+  });
 
-  setTimeout(() => {
-    player.unMute();
-    player.playVideo();
-  }, 450);
-
-  setTimeout(() => player.seekTo(startTime, true), 700);
-  setTimeout(() => player.seekTo(startTime, true), 1100);
-
-  const duration = isFirst ? clipLengths[0] : clipLengths[currentAttempt];
+  const duration = isFirst ? 0.8 : 2; // na razie tylko 0.8 i 2 s – możesz dodać więcej
 
   let elapsed = 0;
   const interval = setInterval(() => {
     elapsed += 0.2;
-    updateBars(elapsed);
     if (elapsed >= duration) {
       clearInterval(interval);
-      if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-        player.pauseVideo();
-      }
-      updateBars(0);
-      showLongerButton();
+      audio.pause();
+      document.getElementById('status').textContent = `Koniec ${duration}s fragmentu`;
     }
   }, 200);
-
-  document.getElementById('status').textContent = `Odtwarzam ${duration}s od ${startTime.toFixed(1)}s`;
 }
 
-// reszta funkcji (checkGuess, skipSong, revealSong, resetGame, sugestie) zostaje taka sama jak u Ciebie
+function checkGuess() {
+  const val = document.getElementById('guess').value.trim().toLowerCase();
+  if (!val) return;
 
-// Na końcu dodaj:
-function resetGame() {
-  currentAttempt = 0;
-  document.getElementById('message').textContent = '';
-  document.getElementById('guess').value = '';
-  updateBars(0);
-  document.getElementById('longerBtn').style.display = 'none';
-  hideSuggestions();
-  currentStartTime = null;
+  const correct = currentSong.title.toLowerCase().includes(val) || currentSong.artist.toLowerCase().includes(val);
+
+  const msg = document.getElementById('message');
+  if (correct) {
+    msg.innerHTML = `<span class="success">Brawo! To ${currentSong.title}</span>`;
+  } else {
+    msg.innerHTML = `<span class="fail">Nie tym razem... To było:</span><br><span class="reveal">${currentSong.title}</span>`;
+  }
+
+  audio.pause();
+  setTimeout(() => {
+    msg.innerHTML = '';
+    // Jeśli chcesz dodać więcej piosenek – losuj następną
+    // currentSong = songs[Math.floor(Math.random() * songs.length)];
+    // loadSong();
+  }, 4000);
 }
+
+function revealSong() {
+  document.getElementById('message').innerHTML = `<span class="reveal">To było: ${currentSong.title}</span>`;
+}
+
+// Start gry
+window.onload = loadSong;
+
+// Odblokowanie dźwięku po pierwszym kliknięciu na stronę (Chrome/Edge wymagają interakcji)
+document.addEventListener('click', () => {
+  if (audio && audio.paused) {
+    audio.play().catch(() => {});
+  }
+}, { once: true });
 </script>
 </body>
 </html>
