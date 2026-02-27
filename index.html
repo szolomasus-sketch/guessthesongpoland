@@ -313,30 +313,30 @@ function playClip(isFirst = false) {
     startTime = currentStartTime;
   }
 
-  // 1. Zatrzymujemy natychmiast – to usuwa powtórzenie poprzedniego fragmentu
+  // 1. Natychmiast zatrzymujemy – to usuwa powtórzenie poprzedniego fragmentu
   player.pauseVideo();
 
   // 2. Seekujemy na nową pozycję
   player.seekTo(startTime, true);
 
-  // 3. Czekamy na bufor i odmutowujemy (400 ms – kluczowy delay)
+  // 3. Czekamy na bufor i odmutowujemy (500 ms – klucz do eliminacji zapętlenia)
   setTimeout(() => {
     player.unMute();
     player.playVideo();
-  }, 400);
+  }, 500);
 
   // 4. Drugi seek po play
   setTimeout(() => {
     player.seekTo(startTime, true);
-  }, 600);
+  }, 800);
 
-  // 5. Trzeci seek + ewentualna ponowna próba play po 1,2 s
+  // 5. Trzeci seek + ewentualna ponowna próba play po 1,5 s
   setTimeout(() => {
     player.seekTo(startTime, true);
     if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
       player.playVideo();
     }
-  }, 1200);
+  }, 1500);
 
   const duration = isFirst ? clipLengths[0] : clipLengths[currentAttempt];
 
