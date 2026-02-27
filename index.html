@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Co To Za Hit? – Twoja Playlista</title>
+  <title>Jaka to melodia – edycja Twitch (ESKA Hity 2026)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,36 +20,13 @@
       background: rgba(0,0,0,0.65);
       padding: 30px;
       border-radius: 16px;
-      max-width: 500px;
+      max-width: 520px;
       width: 100%;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-      position: relative;
     }
     h1 { margin: 0 0 16px; font-size: 2.4em; color: #ff79c6; }
     #status { font-size: 1.1em; margin: 12px 0 20px; color: #4ade80; font-weight: bold; }
-    .audio-bars {
-      height: 60px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      gap: 5px;
-      margin: 16px auto 24px;
-      width: 90%;
-      max-width: 360px;
-    }
-    .bar {
-      width: 8px;
-      background: linear-gradient(to top, #ff79c6, #a78bfa, #4ade80);
-      border-radius: 4px 4px 0 0;
-      transition: height 0.4s ease-out;
-      opacity: 0.85;
-    }
-    .bar.active { animation: pulse 1.3s infinite ease-in-out; }
-    @keyframes pulse {
-      0%, 100% { transform: scaleY(1); opacity: 0.85; }
-      50% { transform: scaleY(1.15); opacity: 1; }
-    }
     .input-wrapper {
       position: relative;
       width: 90%;
@@ -104,281 +81,104 @@
       font-weight: bold;
       transition: all 0.18s;
     }
-    #checkBtn { background: #6366f1; color: white; }
-    #replayBtn { background: #10b981; color: white; }
-    #skipBtn { background: #f59e0b; color: white; }
-    #longerBtn { background: #8b5cf6; color: white; display: none; }
-    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    #checkBtn { background: #9146ff; color: white; }
+    #skipBtn { background: #9146ff55; color: white; }
+    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(145,70,255,0.4); }
     #message {
       font-size: 1.45em;
       margin: 20px 0 12px;
       min-height: 1.6em;
       font-weight: bold;
     }
-    .success { color: #34d399; }
-    .fail { color: #f87171; }
     .reveal { color: #fbbf24; font-style: italic; }
+    iframe {
+      width: 100%;
+      height: 380px;
+      border: none;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Co To Za Hit?</h1>
-  <div class="audio-bars" id="bars"></div>
-  <div id="status">Ładowanie playlisty...</div>
+  <h1>Jaka to melodia – ESKA Hity na Czasie 2026</h1>
+
+  <div id="status">Ładowanie...</div>
+
   <div class="input-wrapper">
-    <input type="text" id="guess" placeholder="Wpisz tytuł / artystę..." autocomplete="off">
+    <input type="text" id="guess" placeholder="Wpisz tytuł lub fragment..." autocomplete="off">
     <div id="suggestions"></div>
   </div>
+
   <div class="buttons">
     <button id="checkBtn" onclick="checkGuess()">Sprawdź</button>
-    <button id="replayBtn" onclick="playClip()">Odtwórz ponownie</button>
     <button id="skipBtn" onclick="skipSong()">Pomiń</button>
-    <button id="longerBtn" onclick="nextLevel()">Dłuższy fragment</button>
   </div>
+
   <div id="message"></div>
+
+  <!-- Embed całej playlisty Spotify -->
+  <iframe src="https://open.spotify.com/embed/playlist/368QEMsG0iW195wmsHikb1?utm_source=generator" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 </div>
 
-<div id="player" style="width:1px;height:1px;overflow:hidden;position:absolute;"></div>
-
-<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-const API_KEY = 'AIzaSyCjdRB_MCy02NB4ceFmQtDnecvt4HdWskQ';
-let player = null;
-let currentSong = {};
-let allPlaylistSongs = [];
-let clipLengths = [0.8, 2, 4, 7, 12, 18];
-let currentAttempt = 0;
-let attemptsLeft = 6;
-let hasUserInteracted = false;
-let currentStartTime = null;
+// Ręczna lista tytułów z playlisty ESKA LUTY 2026 (pierwsze 30 – możesz dodać więcej)
+const playlistTitles = [
+  "Pamiętnik",
+  "DECIDE",
+  "Pray",
+  "Purpose In My Life",
+  "Komu miałabym powiedzieć?",
+  "Turn The Lights Off",
+  "Obejmuję noce",
+  "Bam 2023",
+  "Think About Us",
+  "Plan B",
+  "Hurts",
+  "Feel Your Body",
+  "Wracam",
+  "Die On This Hill",
+  "Hey Son",
+  "Love You More",
+  "Nie ucieknę",
+  "WSZYSCY JESTEŚMY KACPERCZYK",
+  "Destiny",
+  "Blackout Over",
+  "LATARNIE WSZĘDZIE DAWNO ZGASŁY",
+  "Miles Away",
+  "FERRARI",
+  "Ragga Killing",
+  "ZA KOGO MNIE MASZ?",
+  "American Heart",
+  "Waterfalls (feat. Sam Harper & Bobby Harvey)",
+  "Wild",
+  "Midnight Sun",
+  "The Life of a Showgirl"
+  // Dodaj resztę z playlisty jeśli chcesz pełną listę
+];
 
-const MAX_DURATION = clipLengths[clipLengths.length - 1];
-const barsCount = 10;
-const MAX_SUGGESTIONS = 30;
-const PLAYLIST_ID = 'PL4fGSI1pDJn68fmsRw9f6g-NzU5UA45v1';
-
-function initBars() {
-  const container = document.getElementById('bars');
-  container.innerHTML = '';
-  for (let i = 0; i < barsCount; i++) {
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    container.appendChild(bar);
-  }
-}
-
-function updateBars(progress) {
-  const bars = document.querySelectorAll('.bar');
-  const activeCount = Math.round(barsCount * (progress / MAX_DURATION));
-  bars.forEach((bar, i) => {
-    if (i < activeCount) {
-      bar.style.height = `${30 + Math.random() * 70}%`;
-      bar.classList.add('active');
-    } else {
-      bar.style.height = '10%';
-      bar.classList.remove('active');
-    }
-  });
-}
-
-function showLongerButton() {
-  const btn = document.getElementById('longerBtn');
-  if (currentAttempt < clipLengths.length - 1) {
-    btn.style.display = 'inline-block';
-    btn.textContent = `Dłuższy (${clipLengths[currentAttempt + 1]} s)`;
-  } else {
-    btn.style.display = 'none';
-  }
-}
-
-function nextLevel() {
-  if (currentAttempt < clipLengths.length - 1) {
-    currentAttempt++;
-    playClip();
-    showLongerButton();
-  }
-}
-
-function cleanText(text) {
-  if (!text) return '';
-  return text.toLowerCase()
-    .replace(/official|video|audio|lyric|teledysk|klip|hd|4k|vevo|feat\.?|ft\.?|×|&|\/|prod\.?|remix|nowość|nowy|202[3-6]|clip|edit/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function normalizeForCompare(str) {
-  return cleanText(str).replace(/[^a-z0-9ąęłńóśźżąć ]/gi, '').replace(/\s+/g, ' ');
-}
-
-function onYouTubeIframeAPIReady() {
-  initBars();
-  loadPlaylistSongs();
-}
-
-async function loadPlaylistSongs() {
-  const status = document.getElementById('status');
-  status.textContent = 'Pobieranie playlisty...';
-  allPlaylistSongs = [];
-  try {
-    let nextPageToken = '';
-    do {
-      const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${PLAYLIST_ID}&maxResults=50&pageToken=${nextPageToken}&key=${API_KEY}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.error) {
-        status.textContent = 'Błąd API: ' + (data.error.message || 'nieznany');
-        console.error(data.error);
-        return;
-      }
-      if (data.items) {
-        data.items.forEach(item => {
-          const title = item.snippet.title || '';
-          const artist = item.snippet.videoOwnerChannelTitle || '';
-          allPlaylistSongs.push({
-            videoId: item.snippet.resourceId.videoId,
-            rawTitle: title,
-            rawArtist: artist,
-            cleanTitle: normalizeForCompare(title),
-            cleanArtist: normalizeForCompare(artist)
-          });
-        });
-      }
-      nextPageToken = data.nextPageToken || '';
-    } while (nextPageToken);
-    if (allPlaylistSongs.length === 0) {
-      status.textContent = 'Playlista pusta lub niedostępna';
-      return;
-    }
-    status.textContent = `Załadowano ${allPlaylistSongs.length} utworów – start!`;
-    loadNextSong();
-  } catch (err) {
-    console.error(err);
-    status.textContent = 'Błąd ładowania playlisty';
-  }
-}
-
-function loadNextSong() {
-  if (allPlaylistSongs.length === 0) {
-    document.getElementById('status').textContent = 'Brak utworów';
-    return;
-  }
-  const idx = Math.floor(Math.random() * allPlaylistSongs.length);
-  currentSong = allPlaylistSongs[idx];
-  document.getElementById('status').textContent = 'Słuchaj...';
-  if (player) {
-    player.loadVideoById(currentSong.videoId);
-  } else {
-    player = new YT.Player('player', {
-      height: '1',
-      width: '1',
-      videoId: currentSong.videoId,
-      playerVars: {
-        autoplay: 0,
-        controls: 0,
-        modestbranding: 1,
-        rel: 0,
-        fs: 0,
-        mute: 1,
-        enablejsapi: 1,
-        playsinline: 1,
-        disablekb: 1,
-        origin: window.location.origin || 'https://www.youtube.com'
-      },
-      events: {
-        'onReady': onPlayerReady,
-        'onStateChange': e => {
-          if (e.data === YT.PlayerState.PLAYING && hasUserInteracted) {
-            player.unMute();
-          }
-        }
-      }
-    });
-  }
-  resetGame();
-  setTimeout(() => playClip(true), 1400);
-}
-
-function onPlayerReady(event) {
-  console.log('Player gotowy');
-}
-
-function playClip(isFirst = false) {
-  if (!player) return;
-
-  if (hasUserInteracted) player.unMute();
-
-  let startTime;
-
-  if (isFirst || currentStartTime === null) {
-    startTime = Math.max(10, Math.floor(Math.random() * 140));
-    currentStartTime = startTime;
-  } else {
-    startTime = currentStartTime;
-  }
-
-  // 1. Natychmiast zatrzymujemy i ustawiamy pozycję
-  player.pauseVideo();
-  player.seekTo(startTime, true);
-
-  // 2. Odmutowujemy i gramy po krótkim delay (400 ms – optimum na 0,8 s)
-  setTimeout(() => {
-    player.unMute();
-    player.playVideo();
-  }, 400);
-
-  // 3. Drugi seek – eliminuje większość powtórzeń
-  setTimeout(() => {
-    player.seekTo(startTime, true);
-  }, 600);
-
-  // 4. Trzeci seek + zabezpieczenie po 1 s
-  setTimeout(() => {
-    player.seekTo(startTime, true);
-    if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
-      player.playVideo();
-    }
-  }, 1000);
-
-  const duration = isFirst ? clipLengths[0] : clipLengths[currentAttempt];
-
-  let elapsed = 0;
-  const interval = setInterval(() => {
-    elapsed += 0.2;
-    updateBars(elapsed);
-    if (elapsed >= duration) {
-      clearInterval(interval);
-      if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-        player.pauseVideo();
-      }
-      updateBars(0);
-      showLongerButton();
-    }
-  }, 200);
-
-  document.getElementById('status').textContent = `Odtwarzam ${duration}s od ${startTime.toFixed(1)}s`;
-}
+let currentSongIndex = Math.floor(Math.random() * playlistTitles.length);
+let currentSong = playlistTitles[currentSongIndex];
 
 function checkGuess() {
-  if (!hasUserInteracted) {
-    hasUserInteracted = true;
-    if (player) player.unMute();
-  }
-  const val = document.getElementById('guess').value.trim();
+  const val = document.getElementById('guess').value.trim().toLowerCase();
   if (!val) return;
-  const guess = normalizeForCompare(val);
-  const isCorrect = (guess.includes(currentSong.cleanTitle) || currentSong.cleanTitle.includes(guess) ||
-                     guess.includes(currentSong.cleanArtist) || currentSong.cleanArtist.includes(guess)) &&
-                    guess.length >= 3;
+
   const msg = document.getElementById('message');
+  const correct = playlistTitles.some(title => title.toLowerCase().includes(val));
+
   revealSong();
-  if (isCorrect) {
+
+  if (correct) {
     msg.innerHTML += '<br><span class="success">Brawo! Dobrze!</span>';
   } else {
     msg.innerHTML += '<br><span class="fail">Nie tym razem...</span>';
   }
-  setTimeout(loadNextSong, 3000);
+
+  setTimeout(nextSong, 3000);
+
   document.getElementById('guess').value = '';
   hideSuggestions();
 }
@@ -387,89 +187,67 @@ function skipSong() {
   const msg = document.getElementById('message');
   revealSong();
   msg.innerHTML += '<br><span class="fail">Pominięto</span>';
-  setTimeout(loadNextSong, 3000);
+  setTimeout(nextSong, 3000);
 }
 
 function revealSong() {
   const msg = document.getElementById('message');
-  if (!currentSong || !currentSong.rawTitle) {
-    msg.innerHTML = '<span class="reveal">Tytuł jeszcze się ładuje...</span>';
-    return;
-  }
-  let title = currentSong.rawTitle
-    .replace(/\(.*?\)/g, '')
-    .replace(/\[.*?\]/g, '')
-    .replace(/official|video|audio|lyric|teledysk|klip/gi, '')
-    .trim() || '???';
-  let artist = currentSong.rawArtist
-    .replace(/official|channel|music/gi, '')
-    .trim() || '???';
-  msg.innerHTML = `<span class="reveal">${artist} – ${title}</span>`;
+  msg.innerHTML = `<span class="reveal">To był: ${currentSong}</span>`;
 }
 
-function resetGame() {
-  currentAttempt = 0;
-  attemptsLeft = 6;
-  document.getElementById('message').textContent = '';
-  document.getElementById('message').className = '';
-  document.getElementById('guess').value = '';
-  updateBars(0);
-  document.getElementById('longerBtn').style.display = 'none';
-  hideSuggestions();
-  currentStartTime = null;
+function nextSong() {
+  currentSongIndex = Math.floor(Math.random() * playlistTitles.length);
+  currentSong = playlistTitles[currentSongIndex];
+  document.getElementById('status').textContent = 'Słuchaj...';
+  document.getElementById('message').innerHTML = '';
 }
-
-// Podpowiedzi – od 1 litery
-const guessInput = document.getElementById('guess');
-guessInput.addEventListener('input', () => showSuggestions(guessInput.value.trim()));
-guessInput.addEventListener('focus', () => showSuggestions(guessInput.value.trim()));
-guessInput.addEventListener('blur', () => setTimeout(hideSuggestions, 180));
-
-document.addEventListener('click', e => {
-  if (!hasUserInteracted) {
-    hasUserInteracted = true;
-    if (player) player.unMute();
-  }
-  if (!guessInput.contains(e.target) && !document.getElementById('suggestions').contains(e.target)) {
-    hideSuggestions();
-  }
-});
 
 function showSuggestions(query) {
   const div = document.getElementById('suggestions');
   div.innerHTML = '';
+
   if (!query || query.length < 1) {
     div.style.display = 'none';
     return;
   }
+
   const lower = query.toLowerCase();
-  const matches = allPlaylistSongs.filter(s =>
-    s.cleanTitle.includes(lower) ||
-    s.cleanArtist.includes(lower) ||
-    s.rawTitle.toLowerCase().includes(lower) ||
-    s.rawArtist.toLowerCase().includes(lower)
-  );
+  const matches = playlistTitles.filter(title => title.toLowerCase().includes(lower));
+
   if (matches.length === 0) {
     div.style.display = 'none';
     return;
   }
-  matches.slice(0, MAX_SUGGESTIONS).forEach(match => {
+
+  matches.slice(0, 10).forEach(title => {
     const el = document.createElement('div');
     el.className = 'suggestion';
-    el.textContent = `${match.rawArtist} – ${match.rawTitle}`.trim().replace(/\s+/g, ' ');
+    el.textContent = title;
     el.onclick = () => {
-      document.getElementById('guess').value = el.textContent;
+      document.getElementById('guess').value = title;
       div.style.display = 'none';
       checkGuess();
     };
     div.appendChild(el);
   });
+
   div.style.display = 'block';
 }
 
 function hideSuggestions() {
   document.getElementById('suggestions').style.display = 'none';
 }
+
+const guessInput = document.getElementById('guess');
+guessInput.addEventListener('input', () => showSuggestions(guessInput.value.trim()));
+guessInput.addEventListener('focus', () => showSuggestions(guessInput.value.trim()));
+guessInput.addEventListener('blur', () => setTimeout(hideSuggestions, 180));
+
+document.addEventListener('click', e => {
+  if (!guessInput.contains(e.target) && !document.getElementById('suggestions').contains(e.target)) {
+    hideSuggestions();
+  }
+});
 </script>
 </body>
 </html>
