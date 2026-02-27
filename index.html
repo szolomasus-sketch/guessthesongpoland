@@ -3,31 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Co To Za Hit? – Twoja Playlista</title>
+  <title>Jaka to melodia – edycja Twitch</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
-      color: #e0e0e0;
+      background: #0d1117;
+      color: #c9d1d9;
       margin: 0;
       padding: 20px;
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
     }
     .container {
-      background: rgba(0,0,0,0.65);
+      background: #161b22;
       padding: 30px;
-      border-radius: 16px;
-      max-width: 500px;
+      border-radius: 12px;
+      max-width: 520px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-      position: relative;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      border: 1px solid #30363d;
     }
-    h1 { margin: 0 0 16px; font-size: 2.4em; color: #ff79c6; }
-    #status { font-size: 1.1em; margin: 12px 0 20px; color: #4ade80; font-weight: bold; }
+    h1 {
+      margin: 0 0 16px;
+      font-size: 2.6em;
+      color: #9146ff;
+      text-shadow: 0 0 10px rgba(145,70,255,0.6);
+    }
+    #status {
+      font-size: 1.1em;
+      margin: 12px 0 20px;
+      color: #a970ff;
+      font-weight: bold;
+    }
+
     .audio-bars {
       height: 60px;
       display: flex;
@@ -40,7 +50,7 @@
     }
     .bar {
       width: 8px;
-      background: linear-gradient(to top, #ff79c6, #a78bfa, #4ade80);
+      background: linear-gradient(to top, #9146ff, #a970ff, #b083ff);
       border-radius: 4px 4px 0 0;
       transition: height 0.4s ease-out;
       opacity: 0.85;
@@ -50,6 +60,7 @@
       0%, 100% { transform: scaleY(1); opacity: 0.85; }
       50% { transform: scaleY(1.15); opacity: 1; }
     }
+
     .input-wrapper {
       position: relative;
       width: 90%;
@@ -60,17 +71,19 @@
       width: 100%;
       padding: 14px;
       font-size: 1.1em;
-      border: none;
+      border: 1px solid #30363d;
       border-radius: 10px;
-      background: rgba(255,255,255,0.12);
-      color: white;
+      background: #0d1117;
+      color: #c9d1d9;
     }
-    input::placeholder { color: rgba(255,255,255,0.5); }
+    input::placeholder { color: #8b949e; }
+
     #suggestions {
       position: absolute;
       top: 100%;
       left: 0; right: 0;
-      background: rgba(30,30,50,0.97);
+      background: #161b22;
+      border: 1px solid #30363d;
       border-radius: 0 0 10px 10px;
       max-height: 320px;
       overflow-y: auto;
@@ -82,12 +95,12 @@
       padding: 12px 16px;
       cursor: pointer;
       text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      border-bottom: 1px solid #21262d;
       transition: background 0.15s;
       font-size: 0.98em;
     }
-    .suggestion:hover { background: rgba(100,100,255,0.22); }
-    .suggestion:last-child { border-bottom: none; }
+    .suggestion:hover { background: #21262d; }
+
     .buttons {
       display: flex;
       flex-wrap: wrap;
@@ -104,38 +117,45 @@
       font-weight: bold;
       transition: all 0.18s;
     }
-    #checkBtn { background: #6366f1; color: white; }
-    #replayBtn { background: #10b981; color: white; }
-    #skipBtn { background: #f59e0b; color: white; }
-    #longerBtn { background: #8b5cf6; color: white; display: none; }
-    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    #checkBtn    { background: #9146ff; color: white; }
+    #replayBtn   { background: #9146ff88; color: white; }
+    #skipBtn     { background: #9146ff55; color: white; }
+    #longerBtn   { background: #9146ff33; color: white; display: none; }
+
+    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(145,70,255,0.4); }
+
     #message {
       font-size: 1.45em;
       margin: 20px 0 12px;
       min-height: 1.6em;
       font-weight: bold;
     }
-    .success { color: #34d399; }
-    .fail { color: #f87171; }
-    .reveal { color: #fbbf24; font-style: italic; }
+    .success { color: #56d364; }
+    .fail    { color: #f85149; }
+    .reveal  { color: #f0c674; font-style: italic; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Co To Za Hit?</h1>
+  <h1>Jaka to melodia – edycja Twitch</h1>
+
   <div class="audio-bars" id="bars"></div>
-  <div id="status">Ładowanie playlisty...</div>
+
+  <div id="status">Ładowanie...</div>
+
   <div class="input-wrapper">
     <input type="text" id="guess" placeholder="Wpisz tytuł / artystę..." autocomplete="off">
     <div id="suggestions"></div>
   </div>
+
   <div class="buttons">
     <button id="checkBtn" onclick="checkGuess()">Sprawdź</button>
     <button id="replayBtn" onclick="playClip()">Odtwórz ponownie</button>
     <button id="skipBtn" onclick="skipSong()">Pomiń</button>
     <button id="longerBtn" onclick="nextLevel()">Dłuższy fragment</button>
   </div>
+
   <div id="message"></div>
 </div>
 
@@ -151,7 +171,7 @@ let clipLengths = [0.8, 2, 4, 7, 12, 18];
 let currentAttempt = 0;
 let attemptsLeft = 6;
 let hasUserInteracted = false;
-let currentStartTime = null; // ← DODANE – zapamiętuje dokładny moment startu
+let currentStartTime = null; // zapamiętuje start pierwszego odtwarzania danego kawałka
 
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
 const barsCount = 10;
@@ -276,7 +296,7 @@ function loadNextSong() {
     player.loadVideoById(currentSong.videoId);
   } else {
     player = new YT.Player('player', {
-      height: '1', // ← ZMIENIONE z 0 na 1 – pomaga na precyzję seek
+      height: '1',
       width: '1',
       videoId: currentSong.videoId,
       playerVars: {
@@ -311,26 +331,28 @@ function onPlayerReady(event) {
 
 function playClip(isFirst = false) {
   if (!player) return;
+
   if (hasUserInteracted) player.unMute();
 
   let startTime;
 
-  // Zapamiętujemy start pierwszego odtwarzania danego kawałka
   if (isFirst || currentStartTime === null) {
     startTime = Math.max(10, Math.floor(Math.random() * 140));
     currentStartTime = startTime;
   } else {
-    startTime = currentStartTime; // zawsze ten sam moment
+    startTime = currentStartTime;
   }
 
   player.seekTo(startTime, true);
 
-  player.playVideo();
+  setTimeout(() => {
+    player.playVideo();
+  }, 300); // czekamy 300 ms na bufor – to kluczowe przy dłuższych fragmentach
 
-  // Podwójny seek – to kluczowe, żeby YouTube nie ignorował pozycji
+  // Trzeci seek po play – maksymalizuje precyzję
   setTimeout(() => {
     player.seekTo(startTime, true);
-  }, 200);
+  }, 500);
 
   const duration = isFirst ? clipLengths[0] : clipLengths[currentAttempt];
 
@@ -407,7 +429,6 @@ function resetGame() {
   updateBars(0);
   document.getElementById('longerBtn').style.display = 'none';
   hideSuggestions();
-  currentStartTime = null; // resetujemy start dla nowego kawałka
 }
 
 // Podpowiedzi – od 1 litery
