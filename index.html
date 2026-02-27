@@ -146,17 +146,17 @@
 const API_KEY = 'AIzaSyCjdRB_MCy02NB4ceFmQtDnecvt4HdWskQ';
 let player = null;
 let currentSong = {};
-let allPlaylistSongs = []; // wszystkie utwory z playlisty
+let allPlaylistSongs = [];
 let clipLengths = [0.8, 2, 4, 7, 12, 18];
 let currentAttempt = 0;
 let attemptsLeft = 6;
 let hasUserInteracted = false;
-let currentStartTime = null; // zapamiętuje dokładny moment startu
+let currentStartTime = null;
 
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
 const barsCount = 10;
 const MAX_SUGGESTIONS = 30;
-const PLAYLIST_ID = 'PL4fGSI1pDJn68fmsRw9f6g-NzU5UA45v1'; // Twoja playlista
+const PLAYLIST_ID = 'PL4fGSI1pDJn68fmsRw9f6g-NzU5UA45v1';
 
 function initBars() {
   const container = document.getElementById('bars');
@@ -167,6 +167,7 @@ function initBars() {
     container.appendChild(bar);
   }
 }
+
 function updateBars(progress) {
   const bars = document.querySelectorAll('.bar');
   const activeCount = Math.round(barsCount * (progress / MAX_DURATION));
@@ -180,6 +181,7 @@ function updateBars(progress) {
     }
   });
 }
+
 function showLongerButton() {
   const btn = document.getElementById('longerBtn');
   if (currentAttempt < clipLengths.length - 1) {
@@ -189,6 +191,7 @@ function showLongerButton() {
     btn.style.display = 'none';
   }
 }
+
 function nextLevel() {
   if (currentAttempt < clipLengths.length - 1) {
     currentAttempt++;
@@ -196,6 +199,7 @@ function nextLevel() {
     showLongerButton();
   }
 }
+
 function cleanText(text) {
   if (!text) return '';
   return text.toLowerCase()
@@ -203,13 +207,16 @@ function cleanText(text) {
     .replace(/\s+/g, ' ')
     .trim();
 }
+
 function normalizeForCompare(str) {
   return cleanText(str).replace(/[^a-z0-9ąęłńóśźżąć ]/gi, '').replace(/\s+/g, ' ');
 }
+
 function onYouTubeIframeAPIReady() {
   initBars();
   loadPlaylistSongs();
 }
+
 async function loadPlaylistSongs() {
   const status = document.getElementById('status');
   status.textContent = 'Pobieranie playlisty...';
@@ -256,6 +263,7 @@ async function loadPlaylistSongs() {
     status.textContent = 'Błąd ładowania playlisty';
   }
 }
+
 function loadNextSong() {
   if (allPlaylistSongs.length === 0) {
     document.getElementById('status').textContent = 'Brak utworów';
@@ -296,9 +304,11 @@ function loadNextSong() {
   resetGame();
   setTimeout(() => playClip(true), 1400);
 }
+
 function onPlayerReady(event) {
   console.log('Player gotowy');
 }
+
 function playClip(isFirst = false) {
   if (!player) return;
 
@@ -313,24 +323,22 @@ function playClip(isFirst = false) {
     startTime = currentStartTime;
   }
 
-  // 1. Natychmiast zatrzymujemy – to usuwa powtórzenie poprzedniego fragmentu
-  player.pauseVideo();
+  // AGRESYWNY FIX NA ZAPĘTLENIE I CAŁĄ PIOSENKĘ NA POCZĄTKU
+  player.pauseVideo(); // natychmiast zatrzymujemy wszystko
+  player.seekTo(startTime, true); // ustawiamy pozycję
 
-  // 2. Seekujemy na nową pozycję
-  player.seekTo(startTime, true);
-
-  // 3. Czekamy na bufor i odmutowujemy (500 ms – klucz do eliminacji zapętlenia)
+  // Czekamy na bufor + odmutowujemy
   setTimeout(() => {
     player.unMute();
     player.playVideo();
   }, 500);
 
-  // 4. Drugi seek po play
+  // Drugi seek (najważniejszy – eliminuje powtórzenia)
   setTimeout(() => {
     player.seekTo(startTime, true);
   }, 800);
 
-  // 5. Trzeci seek + ewentualna ponowna próba play po 1,5 s
+  // Trzeci seek + zabezpieczenie
   setTimeout(() => {
     player.seekTo(startTime, true);
     if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
@@ -356,6 +364,7 @@ function playClip(isFirst = false) {
 
   document.getElementById('status').textContent = `Odtwarzam ${duration}s od ${startTime.toFixed(1)}s`;
 }
+
 function checkGuess() {
   if (!hasUserInteracted) {
     hasUserInteracted = true;
@@ -409,7 +418,7 @@ function resetGame() {
   updateBars(0);
   document.getElementById('longerBtn').style.display = 'none';
   hideSuggestions();
-  currentStartTime = null; // resetujemy dla nowego kawałka
+  currentStartTime = null;
 }
 // Podpowiedzi – od 1 litery
 const guessInput = document.getElementById('guess');
