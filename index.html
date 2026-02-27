@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jaka to melodia – test z GitHub</title>
+  <title>Jaka to melodia – edycja Twitch</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -27,11 +27,29 @@
     }
     h1 { margin: 0 0 20px; font-size: 2.4em; color: #ff79c6; }
     #status { font-size: 1.2em; margin: 15px 0; color: #a970ff; font-weight: bold; }
-    audio {
-      width: 100%;
+    .audio-bars {
+      height: 80px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 6px;
+      margin: 20px auto 30px;
+      width: 90%;
       max-width: 400px;
-      margin: 20px auto;
-      display: block;
+    }
+    .bar {
+      width: 10px;
+      background: linear-gradient(to top, #ff79c6, #a78bfa, #4ade80);
+      border-radius: 5px 5px 0 0;
+      transition: height 0.3s ease-out;
+      opacity: 0.9;
+    }
+    .bar.active {
+      animation: pulse 0.8s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scaleY(0.8); }
+      50% { transform: scaleY(1.2); }
     }
     .input-wrapper {
       position: relative;
@@ -56,7 +74,7 @@
       right: 0;
       background: rgba(30,30,50,0.97);
       border-radius: 0 0 10px 10px;
-      max-height: 300px;
+      max-height: 320px;
       overflow-y: auto;
       z-index: 10;
       display: none;
@@ -72,20 +90,25 @@
     }
     .suggestion:hover { background: rgba(100,100,255,0.22); }
     .suggestion:last-child { border-bottom: none; }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
     button {
       padding: 12px 28px;
       font-size: 1.1em;
-      margin: 10px 5px;
       border: none;
       border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
       transition: all 0.2s;
     }
-    #startBtn { background: #9146ff; color: white; }
-    #play08Btn { background: #10b981; color: white; }
-    #play2Btn { background: #10b98188; color: white; }
-    #checkBtn { background: #6366f1; color: white; }
+    #checkBtn { background: #9146ff; color: white; }
+    #replayBtn { background: #10b981; color: white; }
+    #longerBtn { background: #8b5cf6; color: white; display: none; }
     button:hover { transform: scale(1.05); }
     #message {
       font-size: 1.5em;
@@ -101,11 +124,14 @@
 <body>
 
 <div class="container">
-  <h1>Jaka to melodia – test z GitHub</h1>
+  <h1>Jaka to melodia – edycja Twitch</h1>
 
-  <div id="status">Kliknij "Start", żeby odblokować dźwięk</div>
+  <div class="audio-bars" id="bars"></div>
 
-  <audio id="audioPlayer" controls></audio>
+  <div id="status">Kliknij gdziekolwiek na stronie, żeby zacząć</div>
+
+  <!-- Ukryty odtwarzacz – nie widać go na ekranie -->
+  <audio id="audioPlayer"></audio>
 
   <div class="input-wrapper">
     <input type="text" id="guess" placeholder="Wpisz tytuł / artystę..." autocomplete="off">
@@ -113,18 +139,16 @@
   </div>
 
   <div>
-    <button id="startBtn" onclick="startGame()">Start / odblokuj dźwięk</button>
-    <button id="play08Btn" onclick="playClip(0.8)">Odtwórz 0.8 s</button>
-    <button id="play2Btn" onclick="playClip(2)">Odtwórz 2 s</button>
-    <button id="play4Btn" onclick="playClip(4)">Odtwórz 4 s</button>
     <button id="checkBtn" onclick="checkGuess()">Sprawdź</button>
+    <button id="replayBtn" onclick="playClip()">Odtwórz ponownie</button>
+    <button id="longerBtn" onclick="nextLevel()">Dłuższy fragment</button>
   </div>
 
   <div id="message"></div>
 </div>
 
 <script>
-// Lista piosenek – na razie tylko Bruno Mars, dodawaj kolejne
+// Lista piosenek (dodawaj kolejne po wrzuceniu mp3 do GitHuba)
 const songs = [
   {
     title: "Bruno Mars - Dance With Me",
@@ -132,42 +156,62 @@ const songs = [
     file: "https://raw.githubusercontent.com/szolomasus-sketch/guessthesongpoland/main/Bruno%20Mars%20-%20Dance%20With%20Me%20%5BOfficial%20Audio%5D.m4a"
   }
   // Dodaj kolejne utwory tutaj, np.:
-  // { title: "Inny utwór - Artysta", file: "https://raw.githubusercontent.com/szolomasus-sketch/guessthesongpoland/main/Inny%20utwor.mp3" }
+  // { title: "Inny utwór - Artysta", file: "https://raw.githubusercontent.com/.../nazwa.mp3" }
 ];
 
 let currentSong = songs[0];
 let audio = document.getElementById('audioPlayer');
 let gameStarted = false;
+let currentStartTime = null;
+let currentDuration = 0.8; // domyślnie 0.8 s
 
 function startGame() {
   if (gameStarted) return;
   gameStarted = true;
-  document.getElementById('status').textContent = 'Gotowe – możesz odtwarzać fragmenty';
+  document.getElementById('status').textContent = 'Gotowe – możesz grać fragmenty';
   audio.src = currentSong.file;
   audio.load();
+  audio.volume = 1.0;
 }
 
-function playClip(seconds) {
+function playClip() {
   if (!gameStarted) {
-    document.getElementById('status').textContent = 'Kliknij "Start / odblokuj dźwięk" najpierw';
+    document.getElementById('status').textContent = 'Kliknij gdziekolwiek na stronie najpierw';
     return;
   }
 
   audio.currentTime = Math.max(5, Math.floor(Math.random() * 100)); // losowy start od 5 s
+  currentStartTime = audio.currentTime; // zapamiętujemy start
+
   audio.play().catch(err => {
     console.log("Błąd play:", err);
-    document.getElementById('status').textContent = 'Kliknij jeszcze raz na stronę lub przycisk';
+    document.getElementById('status').textContent = 'Kliknij jeszcze raz na stronę';
   });
 
   let elapsed = 0;
   const interval = setInterval(() => {
     elapsed += 0.2;
-    if (elapsed >= seconds) {
+    if (elapsed >= currentDuration) {
       clearInterval(interval);
       audio.pause();
-      document.getElementById('status').textContent = `Koniec ${seconds}s fragmentu`;
+      document.getElementById('status').textContent = `Koniec ${currentDuration}s fragmentu`;
     }
   }, 200);
+}
+
+function nextLevel() {
+  const levels = [0.8, 2, 4, 7, 12, 18];
+  if (currentDuration < levels[levels.length - 1]) {
+    const nextIndex = levels.indexOf(currentDuration) + 1;
+    currentDuration = levels[nextIndex] || levels[levels.length - 1];
+    document.getElementById('status').textContent = `Przechodzę do ${currentDuration} s...`;
+    playClip();
+    if (currentDuration < 18) {
+      document.getElementById('longerBtn').style.display = 'inline-block';
+    }
+  } else {
+    document.getElementById('status').textContent = 'To już maksymalny fragment!';
+  }
 }
 
 function checkGuess() {
@@ -228,7 +272,10 @@ document.addEventListener('click', e => {
   if (!guessInput.contains(e.target) && !document.getElementById('suggestions').contains(e.target)) {
     document.getElementById('suggestions').style.display = 'none';
   }
-});
+  if (!gameStarted) {
+    startGame();
+  }
+}, { once: false });
 </script>
 </body>
 </html>
