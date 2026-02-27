@@ -108,6 +108,7 @@
     }
     #checkBtn { background: #9146ff; color: white; }
     #replayBtn { background: #10b981; color: white; }
+    #skipBtn { background: #f59e0b; color: white; }
     #longerBtn { background: #8b5cf6; color: white; display: none; }
     button:hover { transform: scale(1.05); }
     #message {
@@ -130,7 +131,7 @@
 
   <div id="status">Kliknij gdziekolwiek na stronie, żeby zacząć</div>
 
-  <!-- Ukryty odtwarzacz – nie widać go na ekranie -->
+  <!-- Całkowicie ukryty odtwarzacz – nie widać go, nie da się słuchać całości -->
   <audio id="audioPlayer"></audio>
 
   <div class="input-wrapper">
@@ -141,6 +142,7 @@
   <div>
     <button id="checkBtn" onclick="checkGuess()">Sprawdź</button>
     <button id="replayBtn" onclick="playClip()">Odtwórz ponownie</button>
+    <button id="skipBtn" onclick="skipSong()">Pomiń</button>
     <button id="longerBtn" onclick="nextLevel()">Dłuższy fragment</button>
   </div>
 
@@ -163,7 +165,7 @@ let currentSong = songs[0];
 let audio = document.getElementById('audioPlayer');
 let gameStarted = false;
 let currentStartTime = null;
-let currentDuration = 0.8; // domyślnie 0.8 s
+let currentDuration = 0.8; // aktualny poziom (zaczyna od 0.8 s)
 
 function startGame() {
   if (gameStarted) return;
@@ -181,7 +183,7 @@ function playClip() {
   }
 
   audio.currentTime = Math.max(5, Math.floor(Math.random() * 100)); // losowy start od 5 s
-  currentStartTime = audio.currentTime; // zapamiętujemy start
+  currentStartTime = audio.currentTime; // zapamiętujemy
 
   audio.play().catch(err => {
     console.log("Błąd play:", err);
@@ -219,7 +221,7 @@ function checkGuess() {
   if (!val) return;
 
   const msg = document.getElementById('message');
-  const correct = currentSong.title.toLowerCase().includes(val) || currentSong.artist.toLowerCase().includes(val);
+  const correct = songs.some(s => s.title.toLowerCase().includes(val) || s.artist.toLowerCase().includes(val));
 
   if (correct) {
     msg.innerHTML = `<span class="success">Brawo! To ${currentSong.title} – ${currentSong.artist}</span>`;
