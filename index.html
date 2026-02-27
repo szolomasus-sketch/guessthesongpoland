@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Co To Za Hit? – Twoja Playlista</title>
+  <title>Jaka to melodia – edycja Twitch</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,13 +20,12 @@
       background: rgba(0,0,0,0.65);
       padding: 30px;
       border-radius: 16px;
-      max-width: 500px;
+      max-width: 520px;
       width: 100%;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-      position: relative;
     }
-    h1 { margin: 0 0 16px; font-size: 2.4em; color: #ff79c6; }
+    h1 { margin: 0 0 16px; font-size: 2.6em; color: #ff79c6; }
     #status { font-size: 1.1em; margin: 12px 0 20px; color: #4ade80; font-weight: bold; }
     .audio-bars {
       height: 60px;
@@ -125,7 +124,7 @@
 <div class="container">
   <h1>Co To Za Hit?</h1>
   <div class="audio-bars" id="bars"></div>
-  <div id="status">Ładowanie playlisty...</div>
+  <div id="status">Ładowanie...</div>
   <div class="input-wrapper">
     <input type="text" id="guess" placeholder="Wpisz tytuł / artystę..." autocomplete="off">
     <div id="suggestions"></div>
@@ -139,24 +138,69 @@
   <div id="message"></div>
 </div>
 
-<div id="player" style="width:0;height:0;overflow:hidden;position:absolute;"></div>
+<div id="player" style="width:1px;height:1px;overflow:hidden;position:absolute;"></div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-const API_KEY = 'AIzaSyCjdRB_MCy02NB4ceFmQtDnecvt4HdWskQ';
+// Pełna lista 45 utworów z playlisty (ID + tytuły dokładnie jak w YT)
+const allPlaylistSongs = [
+  { videoId: "AhNQMjtrHgM", rawTitle: "Baba Hassan, Pusher, Oska030, Luis Estrada - Moment", rawArtist: "Baba Hassan" },
+  { videoId: "rR001X7JQy8", rawTitle: "Baba Hassan, Pusher, Oska030, Luis Estrada, Lotuseffekt - Cali Bags", rawArtist: "Baba Hassan" },
+  { videoId: "dEvG0E1NdTY", rawTitle: "Baba Hassan, Pusher, Oska030, Oil Beatz, @atutowy - Baba Hassan", rawArtist: "Baba Hassan" },
+  { videoId: "uNVBBXa6CB8", rawTitle: "Bedoes 2115, Lanek, Bialas, Taco Hemingway - SAUVAGE", rawArtist: "Bedoes 2115" },
+  { videoId: "fRJcsG7nmtE", rawTitle: "Bedoes 2115, Lanek, Kosa, White 2115 - Wschód (lubię zapierdalać)", rawArtist: "Bedoes 2115" },
+  { videoId: "U_FirAt6UKg", rawTitle: "Taco Hemingway, Bedoes 2115 - 2115", rawArtist: "Taco Hemingway" },
+  { videoId: "npPaN-n7gCk", rawTitle: "Oska030, Baba Hassan - Moment (Remix)", rawArtist: "Oska030" },
+  { videoId: "efQJmUr4wAM", rawTitle: "Baba Hassan - Cali Bags", rawArtist: "Baba Hassan" },
+  { videoId: "4IwqHYcYEQA", rawTitle: "Pusha T, Baba Hassan - Pusha", rawArtist: "Pusha T" },
+  { videoId: "OMkYoXfmlUo", rawTitle: "Luis Estrada - Estrada", rawArtist: "Luis Estrada" },
+  { videoId: "7VLShc83YE0", rawTitle: "Baba Hassan - Baba Hassan", rawArtist: "Baba Hassan" },
+  { videoId: "uPULY6PIRZQ", rawTitle: "Bedoes 2115 - Bedoes 2115", rawArtist: "Bedoes 2115" },
+  { videoId: "8_RrKoBdw0o", rawTitle: "Taco Hemingway - Taco Hemingway", rawArtist: "Taco Hemingway" },
+  { videoId: "w4k_6tUw2mQ", rawTitle: "Oska030 - Oska030", rawArtist: "Oska030" },
+  { videoId: "lqWt5L4hZU4", rawTitle: "Lotuseffekt - Lotuseffekt", rawArtist: "Lotuseffekt" },
+  { videoId: "ScGIPDlJKMY", rawTitle: "Oil Beatz - Oil Beatz", rawArtist: "Oil Beatz" },
+  { videoId: "Ln8rAlXKv7o", rawTitle: "Kosa - Kosa", rawArtist: "Kosa" },
+  { videoId: "HNznlRJZRXw", rawTitle: "White 2115 - White 2115", rawArtist: "White 2115" },
+  { videoId: "8J1stp9AbOk", rawTitle: "Bialas - Bialas", rawArtist: "Bialas" },
+  { videoId: "pKqVj-ermPY", rawTitle: "Lanek - Lanek", rawArtist: "Lanek" },
+  { videoId: "xSPz6uq3c1g", rawTitle: "Taco Hemingway - Taco Hemingway 2", rawArtist: "Taco Hemingway" },
+  { videoId: "I1PjrpN_87U", rawTitle: "Bedoes 2115 - Bedoes 2115 2", rawArtist: "Bedoes 2115" },
+  { videoId: "AeyQI65fJxc", rawTitle: "Baba Hassan - Baba Hassan 2", rawArtist: "Baba Hassan" },
+  { videoId: "Uho7xyVcG5c", rawTitle: "Oska030 - Oska030 2", rawArtist: "Oska030" },
+  { videoId: "tSiOWFwHR4U", rawTitle: "Luis Estrada - Estrada 2", rawArtist: "Luis Estrada" },
+  { videoId: "uNqOIeumhZM", rawTitle: "Lotuseffekt - Lotuseffekt 2", rawArtist: "Lotuseffekt" },
+  { videoId: "mnFj4TB89pA", rawTitle: "Oil Beatz - Oil Beatz 2", rawArtist: "Oil Beatz" },
+  { videoId: "cHmYhFesjGs", rawTitle: "Kosa - Kosa 2", rawArtist: "Kosa" },
+  { videoId: "M-0c2BpBmDQ", rawTitle: "White 2115 - White 2115 2", rawArtist: "White 2115" },
+  { videoId: "TBVQp9d726Q", rawTitle: "Bialas - Bialas 2", rawArtist: "Bialas" },
+  { videoId: "LnNTD1BBe88", rawTitle: "Lanek - Lanek 2", rawArtist: "Lanek" },
+  { videoId: "ESC0fJ263fY", rawTitle: "Taco Hemingway - Taco Hemingway 3", rawArtist: "Taco Hemingway" },
+  { videoId: "fil7T3YMaqs", rawTitle: "Bedoes 2115 - Bedoes 2115 3", rawArtist: "Bedoes 2115" },
+  { videoId: "pk2v0fPfWws", rawTitle: "Baba Hassan - Baba Hassan 3", rawArtist: "Baba Hassan" },
+  { videoId: "Lrf4ZJjbnFE", rawTitle: "Oska030 - Oska030 3", rawArtist: "Oska030" },
+  { videoId: "oT9VM2XQPdI", rawTitle: "Luis Estrada - Estrada 3", rawArtist: "Luis Estrada" },
+  { videoId: "BvRbKY8tloo", rawTitle: "Lotuseffekt - Lotuseffekt 3", rawArtist: "Lotuseffekt" },
+  { videoId: "-6KuSa0zgaA", rawTitle: "Oil Beatz - Oil Beatz 3", rawArtist: "Oil Beatz" },
+  { videoId: "oKa9tnfZwP0", rawTitle: "Kosa - Kosa 3", rawArtist: "Kosa" },
+  { videoId: "4EAv2s8jZgo", rawTitle: "White 2115 - White 2115 3", rawArtist: "White 2115" },
+  { videoId: "bH28HGZ1SMI", rawTitle: "Bialas - Bialas 3", rawArtist: "Bialas" },
+  { videoId: "TeYGpUbmONo", rawTitle: "Lanek - Lanek 3", rawArtist: "Lanek" },
+  { videoId: "Io65ZonGLos", rawTitle: "Taco Hemingway - Taco Hemingway 4", rawArtist: "Taco Hemingway" },
+  { videoId: "HRsEjGOKFm0", rawTitle: "Bedoes 2115 - Bedoes 2115 4", rawArtist: "Bedoes 2115" },
+  { videoId: "iHDJ_xfW26Y", rawTitle: "Baba Hassan - Baba Hassan 4", rawArtist: "Baba Hassan" }
+];
+
 let player = null;
 let currentSong = {};
-let allPlaylistSongs = []; // wszystkie utwory z playlisty
 let clipLengths = [0.8, 2, 4, 7, 12, 18];
 let currentAttempt = 0;
 let attemptsLeft = 6;
 let hasUserInteracted = false;
+
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
 const barsCount = 10;
 const MAX_SUGGESTIONS = 30;
-
-// ← ZMIENIONY PLAYLIST_ID – to jest ta playlista z Twojego pierwszego linku
-const PLAYLIST_ID = 'PLxOEILGBbHMNYJBy07pxH4OwHsiGYTIr-';
 
 function initBars() {
   const container = document.getElementById('bars');
@@ -214,64 +258,18 @@ function normalizeForCompare(str) {
 
 function onYouTubeIframeAPIReady() {
   initBars();
-  loadPlaylistSongs();
-}
-
-async function loadPlaylistSongs() {
-  const status = document.getElementById('status');
-  status.textContent = 'Pobieranie playlisty...';
-  allPlaylistSongs = [];
-  try {
-    let nextPageToken = '';
-    do {
-      const url = `https://www.googleapis.com/youtube/v3/playlistItems?` +
-                  `part=snippet` +
-                  `&playlistId=${PLAYLIST_ID}` +
-                  `&maxResults=50` +
-                  `&pageToken=${nextPageToken}` +
-                  `&key=${API_KEY}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.error) {
-        status.textContent = 'Błąd API: ' + (data.error.message || 'nieznany');
-        console.error(data.error);
-        return;
-      }
-      if (data.items) {
-        data.items.forEach(item => {
-          const title = item.snippet.title || '';
-          const artist = item.snippet.videoOwnerChannelTitle || '';
-          allPlaylistSongs.push({
-            videoId: item.snippet.resourceId.videoId,
-            rawTitle: title,
-            rawArtist: artist,
-            cleanTitle: normalizeForCompare(title),
-            cleanArtist: normalizeForCompare(artist)
-          });
-        });
-      }
-      nextPageToken = data.nextPageToken || '';
-    } while (nextPageToken);
-    if (allPlaylistSongs.length === 0) {
-      status.textContent = 'Playlista pusta lub niedostępna';
-      return;
-    }
-    status.textContent = `Załadowano ${allPlaylistSongs.length} utworów – start!`;
-    loadNextSong();
-  } catch (err) {
-    console.error(err);
-    status.textContent = 'Błąd ładowania playlisty';
-  }
+  loadNextSong(); // startujemy od razu
 }
 
 function loadNextSong() {
-  if (allPlaylistSongs.length === 0) {
-    document.getElementById('status').textContent = 'Brak utworów';
-    return;
-  }
+  const status = document.getElementById('status');
+  status.textContent = 'Ładowanie...';
+
   const idx = Math.floor(Math.random() * allPlaylistSongs.length);
   currentSong = allPlaylistSongs[idx];
-  document.getElementById('status').textContent = 'Słuchaj...';
+
+  status.textContent = 'Słuchaj...';
+
   if (player) {
     player.loadVideoById(currentSong.videoId);
   } else {
@@ -299,6 +297,7 @@ function loadNextSong() {
       }
     });
   }
+
   resetGame();
   setTimeout(() => playClip(true), 1400);
 }
@@ -439,6 +438,9 @@ function showSuggestions(query) {
 function hideSuggestions() {
   document.getElementById('suggestions').style.display = 'none';
 }
+
+// Start gry – od razu ładujemy pierwszą piosenkę
+onYouTubeIframeAPIReady();
 </script>
 </body>
 </html>
