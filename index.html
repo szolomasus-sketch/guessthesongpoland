@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Co To Za Hit? – Twoja Playlista</title>
+  <title>Jaka to melodia - Autor: Pawlus</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -123,7 +123,7 @@
 <body>
 
 <div class="container">
-  <h1>Co To Za Hit?</h1>
+  <h1>Jaka to melodia? Autor: Pawlus</h1>
   <div class="audio-bars" id="bars"></div>
   <div id="status">Ładowanie playlisty...</div>
   <div class="input-wrapper">
@@ -151,7 +151,7 @@ let clipLengths = [0.8, 2, 4, 7, 12, 18];
 let currentAttempt = 0;
 let attemptsLeft = 6;
 let hasUserInteracted = false;
-let currentStartTime = null; // ← zapamiętuje dokładny moment startu
+let currentStartTime = null; // zapamiętuje dokładny moment startu
 
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
 const barsCount = 10;
@@ -311,7 +311,7 @@ function playClip(isFirst = false) {
     startTime = Math.max(10, Math.floor(Math.random() * 140));
     currentStartTime = startTime;
   } else {
-    startTime = currentStartTime; // zawsze ten sam moment
+    startTime = currentStartTime;
   }
 
   // 1. Najpierw seek i pause – wymuszamy pozycję przed play
