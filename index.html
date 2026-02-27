@@ -318,33 +318,28 @@ function playClip(isFirst = false) {
     startTime = currentStartTime;
   }
 
-  // AGRESYWNY FIX NA ZAPĘTLENIE I CAŁĄ PIOSENKĘ NA POCZĄTKU
-  player.pauseVideo();           // natychmiast zatrzymujemy wszystko
-  player.seekTo(startTime, true); // ustawiamy pozycję
+  // 1. Natychmiast zatrzymujemy i ustawiamy pozycję
+  player.pauseVideo();
+  player.seekTo(startTime, true);
 
-  // Czekamy na bufor + odmutowujemy (600 ms – maksymalny bezpieczny delay)
+  // 2. Odmutowujemy i gramy po krótkim delay (400 ms – optimum na 0,8 s)
   setTimeout(() => {
     player.unMute();
     player.playVideo();
+  }, 400);
+
+  // 3. Drugi seek – eliminuje większość powtórzeń
+  setTimeout(() => {
+    player.seekTo(startTime, true);
   }, 600);
 
-  // Drugi seek
-  setTimeout(() => {
-    player.seekTo(startTime, true);
-  }, 900);
-
-  // Trzeci seek
-  setTimeout(() => {
-    player.seekTo(startTime, true);
-  }, 1300);
-
-  // Czwarty seek + zabezpieczenie po 2 s
+  // 4. Trzeci seek + zabezpieczenie po 1 s
   setTimeout(() => {
     player.seekTo(startTime, true);
     if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
       player.playVideo();
     }
-  }, 2000);
+  }, 1000);
 
   const duration = isFirst ? clipLengths[0] : clipLengths[currentAttempt];
 
