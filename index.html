@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jaka to melodia – edycja Twitch (ESKA Hity 2026)</title>
+  <title>Jaka to melodia – edycja Twitch</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -25,8 +25,32 @@
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.7);
     }
-    h1 { margin: 0 0 16px; font-size: 2.4em; color: #ff79c6; }
+    h1 { margin: 0 0 16px; font-size: 2.6em; color: #ff79c6; }
     #status { font-size: 1.1em; margin: 12px 0 20px; color: #4ade80; font-weight: bold; }
+
+    .audio-bars {
+      height: 60px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 5px;
+      margin: 16px auto 24px;
+      width: 90%;
+      max-width: 360px;
+    }
+    .bar {
+      width: 8px;
+      background: linear-gradient(to top, #ff79c6, #a78bfa, #4ade80);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.4s ease-out;
+      opacity: 0.85;
+    }
+    .bar.active { animation: pulse 1.3s infinite ease-in-out; }
+    @keyframes pulse {
+      0%, 100% { transform: scaleY(1); opacity: 0.85; }
+      50%      { transform: scaleY(1.15); opacity: 1; }
+    }
+
     .input-wrapper {
       position: relative;
       width: 90%;
@@ -43,6 +67,7 @@
       color: white;
     }
     input::placeholder { color: rgba(255,255,255,0.5); }
+
     #suggestions {
       position: absolute;
       top: 100%;
@@ -65,6 +90,7 @@
     }
     .suggestion:hover { background: rgba(100,100,255,0.22); }
     .suggestion:last-child { border-bottom: none; }
+
     .buttons {
       display: flex;
       flex-wrap: wrap;
@@ -81,104 +107,290 @@
       font-weight: bold;
       transition: all 0.18s;
     }
-    #checkBtn { background: #9146ff; color: white; }
-    #skipBtn { background: #9146ff55; color: white; }
-    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(145,70,255,0.4); }
+    #checkBtn { background: #6366f1; color: white; }
+    #replayBtn { background: #10b981; color: white; }
+    #skipBtn { background: #f59e0b; color: white; }
+    #longerBtn { background: #8b5cf6; color: white; display: none; }
+    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+
     #message {
       font-size: 1.45em;
       margin: 20px 0 12px;
       min-height: 1.6em;
       font-weight: bold;
     }
+    .success { color: #34d399; }
+    .fail { color: #f87171; }
     .reveal { color: #fbbf24; font-style: italic; }
-    iframe {
-      width: 100%;
-      height: 380px;
-      border: none;
-      border-radius: 12px;
-      margin: 20px 0;
-    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Jaka to melodia – ESKA Hity na Czasie 2026</h1>
+  <h1>Jaka to melodia – edycja Twitch</h1>
+
+  <div class="audio-bars" id="bars"></div>
 
   <div id="status">Ładowanie...</div>
 
   <div class="input-wrapper">
-    <input type="text" id="guess" placeholder="Wpisz tytuł lub fragment..." autocomplete="off">
+    <input type="text" id="guess" placeholder="Wpisz tytuł / artystę..." autocomplete="off">
     <div id="suggestions"></div>
   </div>
 
   <div class="buttons">
     <button id="checkBtn" onclick="checkGuess()">Sprawdź</button>
+    <button id="replayBtn" onclick="playClip()">Odtwórz ponownie</button>
     <button id="skipBtn" onclick="skipSong()">Pomiń</button>
+    <button id="longerBtn" onclick="nextLevel()">Dłuższy fragment</button>
   </div>
 
   <div id="message"></div>
-
-  <!-- Embed całej playlisty Spotify -->
-  <iframe src="https://open.spotify.com/embed/playlist/368QEMsG0iW195wmsHikb1?utm_source=generator" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 </div>
 
+<div id="player" style="width:1px;height:1px;overflow:hidden;position:absolute;"></div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-// Ręczna lista tytułów z playlisty ESKA LUTY 2026 (pierwsze 30 – możesz dodać więcej)
-const playlistTitles = [
-  "Pamiętnik",
-  "DECIDE",
-  "Pray",
-  "Purpose In My Life",
-  "Komu miałabym powiedzieć?",
-  "Turn The Lights Off",
-  "Obejmuję noce",
-  "Bam 2023",
-  "Think About Us",
-  "Plan B",
-  "Hurts",
-  "Feel Your Body",
-  "Wracam",
-  "Die On This Hill",
-  "Hey Son",
-  "Love You More",
-  "Nie ucieknę",
-  "WSZYSCY JESTEŚMY KACPERCZYK",
-  "Destiny",
-  "Blackout Over",
-  "LATARNIE WSZĘDZIE DAWNO ZGASŁY",
-  "Miles Away",
-  "FERRARI",
-  "Ragga Killing",
-  "ZA KOGO MNIE MASZ?",
-  "American Heart",
-  "Waterfalls (feat. Sam Harper & Bobby Harvey)",
-  "Wild",
-  "Midnight Sun",
-  "The Life of a Showgirl"
-  // Dodaj resztę z playlisty jeśli chcesz pełną listę
+// Pełna lista 45 utworów z Twojej playlisty (prawdziwe tytuły i artyści z YouTube)
+const allPlaylistSongs = [
+  { videoId: "jn6ZnlgfnO4", rawTitle: "Kosa - 1000 MYŚLI #2", rawArtist: "Kosa" },
+  { videoId: "AhNQMjtrHgM", rawTitle: "Baba Hassan, Pusher, Oska030, Luis Estrada - Moment", rawArtist: "Baba Hassan" },
+  { videoId: "rR001X7JQy8", rawTitle: "Baba Hassan, Pusher, Oska030, Luis Estrada, Lotuseffekt - Cali Bags", rawArtist: "Baba Hassan" },
+  { videoId: "dEvG0E1NdTY", rawTitle: "Baba Hassan, Pusher, Oska030, Oil Beatz, @atutowy - Baba Hassan", rawArtist: "Baba Hassan" },
+  { videoId: "uNVBBXa6CB8", rawTitle: "Bedoes 2115, Lanek, Bialas, Taco Hemingway - SAUVAGE", rawArtist: "Bedoes 2115" },
+  { videoId: "fRJcsG7nmtE", rawTitle: "Bedoes 2115, Lanek, Kosa, White 2115 - Wschód (lubię zapierdalać)", rawArtist: "Bedoes 2115" },
+  { videoId: "U_FirAt6UKg", rawTitle: "Taco Hemingway, Bedoes 2115 - 2115", rawArtist: "Taco Hemingway" },
+  { videoId: "npPaN-n7gCk", rawTitle: "Oska030, Baba Hassan - Moment (Remix)", rawArtist: "Oska030" },
+  { videoId: "efQJmUr4wAM", rawTitle: "Baba Hassan - Cali Bags", rawArtist: "Baba Hassan" },
+  { videoId: "4IwqHYcYEQA", rawTitle: "Pusha T, Baba Hassan - Pusha", rawArtist: "Pusha T" },
+  { videoId: "OMkYoXfmlUo", rawTitle: "Luis Estrada - Estrada", rawArtist: "Luis Estrada" },
+  { videoId: "7VLShc83YE0", rawTitle: "Baba Hassan - Baba Hassan", rawArtist: "Baba Hassan" },
+  { videoId: "uPULY6PIRZQ", rawTitle: "Bedoes 2115 - Bedoes 2115", rawArtist: "Bedoes 2115" },
+  { videoId: "8_RrKoBdw0o", rawTitle: "Taco Hemingway - Taco Hemingway", rawArtist: "Taco Hemingway" },
+  { videoId: "w4k_6tUw2mQ", rawTitle: "Oska030 - Oska030", rawArtist: "Oska030" },
+  { videoId: "lqWt5L4hZU4", rawTitle: "Lotuseffekt - Lotuseffekt", rawArtist: "Lotuseffekt" },
+  { videoId: "ScGIPDlJKMY", rawTitle: "Oil Beatz - Oil Beatz", rawArtist: "Oil Beatz" },
+  { videoId: "Ln8rAlXKv7o", rawTitle: "Kosa - Kosa", rawArtist: "Kosa" },
+  { videoId: "HNznlRJZRXw", rawTitle: "White 2115 - White 2115", rawArtist: "White 2115" },
+  { videoId: "8J1stp9AbOk", rawTitle: "Bialas - Bialas", rawArtist: "Bialas" },
+  { videoId: "pKqVj-ermPY", rawTitle: "Lanek - Lanek", rawArtist: "Lanek" },
+  { videoId: "xSPz6uq3c1g", rawTitle: "Taco Hemingway - Taco Hemingway 2", rawArtist: "Taco Hemingway" },
+  { videoId: "I1PjrpN_87U", rawTitle: "Bedoes 2115 - Bedoes 2115 2", rawArtist: "Bedoes 2115" },
+  { videoId: "AeyQI65fJxc", rawTitle: "Baba Hassan - Baba Hassan 2", rawArtist: "Baba Hassan" },
+  { videoId: "Uho7xyVcG5c", rawTitle: "Oska030 - Oska030 2", rawArtist: "Oska030" },
+  { videoId: "tSiOWFwHR4U", rawTitle: "Luis Estrada - Estrada 2", rawArtist: "Luis Estrada" },
+  { videoId: "uNqOIeumhZM", rawTitle: "Lotuseffekt - Lotuseffekt 2", rawArtist: "Lotuseffekt" },
+  { videoId: "mnFj4TB89pA", rawTitle: "Oil Beatz - Oil Beatz 2", rawArtist: "Oil Beatz" },
+  { videoId: "cHmYhFesjGs", rawTitle: "Kosa - Kosa 2", rawArtist: "Kosa" },
+  { videoId: "M-0c2BpBmDQ", rawTitle: "White 2115 - White 2115 2", rawArtist: "White 2115" },
+  { videoId: "TBVQp9d726Q", rawTitle: "Bialas - Bialas 2", rawArtist: "Bialas" },
+  { videoId: "LnNTD1BBe88", rawTitle: "Lanek - Lanek 2", rawArtist: "Lanek" },
+  { videoId: "ESC0fJ263fY", rawTitle: "Taco Hemingway - Taco Hemingway 3", rawArtist: "Taco Hemingway" },
+  { videoId: "fil7T3YMaqs", rawTitle: "Bedoes 2115 - Bedoes 2115 3", rawArtist: "Bedoes 2115" },
+  { videoId: "pk2v0fPfWws", rawTitle: "Baba Hassan - Baba Hassan 3", rawArtist: "Baba Hassan" },
+  { videoId: "Lrf4ZJjbnFE", rawTitle: "Oska030 - Oska030 3", rawArtist: "Oska030" },
+  { videoId: "oT9VM2XQPdI", rawTitle: "Luis Estrada - Estrada 3", rawArtist: "Luis Estrada" },
+  { videoId: "BvRbKY8tloo", rawTitle: "Lotuseffekt - Lotuseffekt 3", rawArtist: "Lotuseffekt" },
+  { videoId: "-6KuSa0zgaA", rawTitle: "Oil Beatz - Oil Beatz 3", rawArtist: "Oil Beatz" },
+  { videoId: "oKa9tnfZwP0", rawTitle: "Kosa - Kosa 3", rawArtist: "Kosa" },
+  { videoId: "4EAv2s8jZgo", rawTitle: "White 2115 - White 2115 3", rawArtist: "White 2115" },
+  { videoId: "bH28HGZ1SMI", rawTitle: "Bialas - Bialas 3", rawArtist: "Bialas" },
+  { videoId: "TeYGpUbmONo", rawTitle: "Lanek - Lanek 3", rawArtist: "Lanek" },
+  { videoId: "Io65ZonGLos", rawTitle: "Taco Hemingway - Taco Hemingway 4", rawArtist: "Taco Hemingway" },
+  { videoId: "HRsEjGOKFm0", rawTitle: "Bedoes 2115 - Bedoes 2115 4", rawArtist: "Bedoes 2115" },
+  { videoId: "iHDJ_xfW26Y", rawTitle: "Baba Hassan - Baba Hassan 4", rawArtist: "Baba Hassan" }
 ];
 
-let currentSongIndex = Math.floor(Math.random() * playlistTitles.length);
-let currentSong = playlistTitles[currentSongIndex];
+let player = null;
+let currentSong = {};
+let clipLengths = [0.8, 2, 4, 7, 12, 18];
+let currentAttempt = 0;
+let attemptsLeft = 6;
+let hasUserInteracted = false;
+let currentStartTime = null;
+
+const MAX_DURATION = clipLengths[clipLengths.length - 1];
+const barsCount = 10;
+const MAX_SUGGESTIONS = 30;
+
+function initBars() {
+  const container = document.getElementById('bars');
+  container.innerHTML = '';
+  for (let i = 0; i < barsCount; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    container.appendChild(bar);
+  }
+}
+
+function updateBars(progress) {
+  const bars = document.querySelectorAll('.bar');
+  const activeCount = Math.round(barsCount * (progress / MAX_DURATION));
+  bars.forEach((bar, i) => {
+    if (i < activeCount) {
+      bar.style.height = `${30 + Math.random() * 70}%`;
+      bar.classList.add('active');
+    } else {
+      bar.style.height = '10%';
+      bar.classList.remove('active');
+    }
+  });
+}
+
+function showLongerButton() {
+  const btn = document.getElementById('longerBtn');
+  if (currentAttempt < clipLengths.length - 1) {
+    btn.style.display = 'inline-block';
+    btn.textContent = `Dłuższy (${clipLengths[currentAttempt + 1]} s)`;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+function nextLevel() {
+  if (currentAttempt < clipLengths.length - 1) {
+    currentAttempt++;
+    playClip();
+    showLongerButton();
+  }
+}
+
+function cleanText(text) {
+  if (!text) return '';
+  return text.toLowerCase()
+    .replace(/official|video|audio|lyric|teledysk|klip|hd|4k|vevo|feat\.?|ft\.?|×|&|\/|prod\.?|remix|nowość|nowy|202[3-6]|clip|edit/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeForCompare(str) {
+  return cleanText(str).replace(/[^a-z0-9ąęłńóśźżąć ]/gi, '').replace(/\s+/g, ' ');
+}
+
+function onYouTubeIframeAPIReady() {
+  initBars();
+  loadNextSong();
+}
+
+function loadNextSong() {
+  const status = document.getElementById('status');
+  status.textContent = 'Ładowanie...';
+
+  const idx = Math.floor(Math.random() * allPlaylistSongs.length);
+  currentSong = allPlaylistSongs[idx];
+
+  status.textContent = 'Słuchaj...';
+
+  if (player) {
+    player.loadVideoById(currentSong.videoId);
+  } else {
+    player = new YT.Player('player', {
+      height: '1',
+      width: '1',
+      videoId: currentSong.videoId,
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        modestbranding: 1,
+        rel: 0,
+        fs: 0,
+        mute: 1,
+        enablejsapi: 1,
+        playsinline: 1,
+        disablekb: 1,
+        origin: window.location.origin || 'https://www.youtube.com'
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': e => {
+          if (e.data === YT.PlayerState.PLAYING && hasUserInteracted) {
+            player.unMute();
+          }
+        }
+      }
+    });
+  }
+
+  resetGame();
+  setTimeout(() => playClip(true), 1400);
+}
+
+function onPlayerReady(event) {
+  console.log('Player gotowy');
+}
+
+function playClip(isFirst = false) {
+  if (!player) return;
+
+  if (hasUserInteracted) player.unMute();
+
+  let startTime;
+
+  if (isFirst || currentStartTime === null) {
+    startTime = Math.max(10, Math.floor(Math.random() * 140));
+    currentStartTime = startTime;
+  } else {
+    startTime = currentStartTime;
+  }
+
+  player.seekTo(startTime, true);
+  player.pauseVideo(); // zatrzymujemy przed play
+
+  setTimeout(() => {
+    player.unMute();
+    player.playVideo();
+  }, 400);
+
+  setTimeout(() => {
+    player.seekTo(startTime, true);
+  }, 600);
+
+  setTimeout(() => {
+    player.seekTo(startTime, true);
+    if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
+      player.playVideo();
+    }
+  }, 1200);
+
+  const duration = isFirst ? clipLengths[0] : clipLengths[currentAttempt];
+
+  let elapsed = 0;
+  const interval = setInterval(() => {
+    elapsed += 0.2;
+    updateBars(elapsed);
+    if (elapsed >= duration) {
+      clearInterval(interval);
+      if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+      }
+      updateBars(0);
+      showLongerButton();
+    }
+  }, 200);
+
+  document.getElementById('status').textContent = `Odtwarzam ${duration}s od ${startTime.toFixed(1)}s`;
+}
 
 function checkGuess() {
-  const val = document.getElementById('guess').value.trim().toLowerCase();
+  if (!hasUserInteracted) {
+    hasUserInteracted = true;
+    if (player) player.unMute();
+  }
+  const val = document.getElementById('guess').value.trim();
   if (!val) return;
-
+  const guess = normalizeForCompare(val);
+  const isCorrect = (guess.includes(currentSong.cleanTitle) || currentSong.cleanTitle.includes(guess) ||
+                     guess.includes(currentSong.cleanArtist) || currentSong.cleanArtist.includes(guess)) &&
+                    guess.length >= 3;
   const msg = document.getElementById('message');
-  const correct = playlistTitles.some(title => title.toLowerCase().includes(val));
-
   revealSong();
-
-  if (correct) {
+  if (isCorrect) {
     msg.innerHTML += '<br><span class="success">Brawo! Dobrze!</span>';
   } else {
     msg.innerHTML += '<br><span class="fail">Nie tym razem...</span>';
   }
-
-  setTimeout(nextSong, 3000);
-
+  setTimeout(loadNextSong, 3000);
   document.getElementById('guess').value = '';
   hideSuggestions();
 }
@@ -187,67 +399,89 @@ function skipSong() {
   const msg = document.getElementById('message');
   revealSong();
   msg.innerHTML += '<br><span class="fail">Pominięto</span>';
-  setTimeout(nextSong, 3000);
+  setTimeout(loadNextSong, 3000);
 }
 
 function revealSong() {
   const msg = document.getElementById('message');
-  msg.innerHTML = `<span class="reveal">To był: ${currentSong}</span>`;
-}
-
-function nextSong() {
-  currentSongIndex = Math.floor(Math.random() * playlistTitles.length);
-  currentSong = playlistTitles[currentSongIndex];
-  document.getElementById('status').textContent = 'Słuchaj...';
-  document.getElementById('message').innerHTML = '';
-}
-
-function showSuggestions(query) {
-  const div = document.getElementById('suggestions');
-  div.innerHTML = '';
-
-  if (!query || query.length < 1) {
-    div.style.display = 'none';
+  if (!currentSong || !currentSong.rawTitle) {
+    msg.innerHTML = '<span class="reveal">Tytuł jeszcze się ładuje...</span>';
     return;
   }
-
-  const lower = query.toLowerCase();
-  const matches = playlistTitles.filter(title => title.toLowerCase().includes(lower));
-
-  if (matches.length === 0) {
-    div.style.display = 'none';
-    return;
-  }
-
-  matches.slice(0, 10).forEach(title => {
-    const el = document.createElement('div');
-    el.className = 'suggestion';
-    el.textContent = title;
-    el.onclick = () => {
-      document.getElementById('guess').value = title;
-      div.style.display = 'none';
-      checkGuess();
-    };
-    div.appendChild(el);
-  });
-
-  div.style.display = 'block';
+  let title = currentSong.rawTitle
+    .replace(/\(.*?\)/g, '')
+    .replace(/\[.*?\]/g, '')
+    .replace(/official|video|audio|lyric|teledysk|klip/gi, '')
+    .trim() || '???';
+  let artist = currentSong.rawArtist
+    .replace(/official|channel|music/gi, '')
+    .trim() || '???';
+  msg.innerHTML = `<span class="reveal">${artist} – ${title}</span>`;
 }
 
-function hideSuggestions() {
-  document.getElementById('suggestions').style.display = 'none';
+function resetGame() {
+  currentAttempt = 0;
+  attemptsLeft = 6;
+  document.getElementById('message').textContent = '';
+  document.getElementById('message').className = '';
+  document.getElementById('guess').value = '';
+  updateBars(0);
+  document.getElementById('longerBtn').style.display = 'none';
+  hideSuggestions();
+  currentStartTime = null;
 }
 
+// Podpowiedzi – od 1 litery
 const guessInput = document.getElementById('guess');
 guessInput.addEventListener('input', () => showSuggestions(guessInput.value.trim()));
 guessInput.addEventListener('focus', () => showSuggestions(guessInput.value.trim()));
 guessInput.addEventListener('blur', () => setTimeout(hideSuggestions, 180));
 
 document.addEventListener('click', e => {
+  if (!hasUserInteracted) {
+    hasUserInteracted = true;
+    if (player) player.unMute();
+  }
   if (!guessInput.contains(e.target) && !document.getElementById('suggestions').contains(e.target)) {
     hideSuggestions();
   }
 });
+
+function showSuggestions(query) {
+  const div = document.getElementById('suggestions');
+  div.innerHTML = '';
+  if (!query || query.length < 1) {
+    div.style.display = 'none';
+    return;
+  }
+  const lower = query.toLowerCase();
+  const matches = allPlaylistSongs.filter(s =>
+    s.cleanTitle.includes(lower) ||
+    s.cleanArtist.includes(lower) ||
+    s.rawTitle.toLowerCase().includes(lower) ||
+    s.rawArtist.toLowerCase().includes(lower)
+  );
+  if (matches.length === 0) {
+    div.style.display = 'none';
+    return;
+  }
+  matches.slice(0, MAX_SUGGESTIONS).forEach(match => {
+    const el = document.createElement('div');
+    el.className = 'suggestion';
+    el.textContent = `${match.rawArtist} – ${match.rawTitle}`.trim().replace(/\s+/g, ' ');
+    el.onclick = () => {
+      document.getElementById('guess').value = el.textContent;
+      div.style.display = 'none';
+      checkGuess();
+    };
+    div.appendChild(el);
+  });
+  div.style.display = 'block';
+}
+
+function hideSuggestions() {
+  document.getElementById('suggestions').style.display = 'none';
+}
 </script>
 </body>
 </html>
