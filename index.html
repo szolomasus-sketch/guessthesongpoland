@@ -3,40 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jaka to melodia – edycja Twitch</title>
+  <title>Co To Za Hit? – Twoja Playlista</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #0d1117;
-      color: #c9d1d9;
+      background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+      color: #e0e0e0;
       margin: 0;
       padding: 20px;
       min-height: 100vh;
       display: flex;
       justify-content: center;
+      align-items: center;
     }
     .container {
-      background: #161b22;
+      background: rgba(0,0,0,0.65);
       padding: 30px;
-      border-radius: 12px;
-      max-width: 520px;
+      border-radius: 16px;
+      max-width: 500px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-      border: 1px solid #30363d;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      position: relative;
     }
-    h1 {
-      margin: 0 0 16px;
-      font-size: 2.6em;
-      color: #9146ff;
-      text-shadow: 0 0 10px rgba(145,70,255,0.6);
-    }
-    #status {
-      font-size: 1.1em;
-      margin: 12px 0 20px;
-      color: #a970ff;
-      font-weight: bold;
-    }
+    h1 { margin: 0 0 16px; font-size: 2.4em; color: #ff79c6; }
+    #status { font-size: 1.1em; margin: 12px 0 20px; color: #4ade80; font-weight: bold; }
 
     .audio-bars {
       height: 60px;
@@ -50,7 +41,7 @@
     }
     .bar {
       width: 8px;
-      background: linear-gradient(to top, #9146ff, #a970ff, #b083ff);
+      background: linear-gradient(to top, #ff79c6, #a78bfa, #4ade80);
       border-radius: 4px 4px 0 0;
       transition: height 0.4s ease-out;
       opacity: 0.85;
@@ -71,19 +62,18 @@
       width: 100%;
       padding: 14px;
       font-size: 1.1em;
-      border: 1px solid #30363d;
+      border: none;
       border-radius: 10px;
-      background: #0d1117;
-      color: #c9d1d9;
+      background: rgba(255,255,255,0.12);
+      color: white;
     }
-    input::placeholder { color: #8b949e; }
+    input::placeholder { color: rgba(255,255,255,0.5); }
 
     #suggestions {
       position: absolute;
       top: 100%;
       left: 0; right: 0;
-      background: #161b22;
-      border: 1px solid #30363d;
+      background: rgba(30,30,50,0.97);
       border-radius: 0 0 10px 10px;
       max-height: 320px;
       overflow-y: auto;
@@ -95,11 +85,12 @@
       padding: 12px 16px;
       cursor: pointer;
       text-align: left;
-      border-bottom: 1px solid #21262d;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
       transition: background 0.15s;
       font-size: 0.98em;
     }
-    .suggestion:hover { background: #21262d; }
+    .suggestion:hover { background: rgba(100,100,255,0.22); }
+    .suggestion:last-child { border-bottom: none; }
 
     .buttons {
       display: flex;
@@ -117,12 +108,12 @@
       font-weight: bold;
       transition: all 0.18s;
     }
-    #checkBtn    { background: #9146ff; color: white; }
-    #replayBtn   { background: #9146ff88; color: white; }
-    #skipBtn     { background: #9146ff55; color: white; }
-    #longerBtn   { background: #9146ff33; color: white; display: none; }
+    #checkBtn    { background: #6366f1; color: white; }
+    #replayBtn   { background: #10b981; color: white; }
+    #skipBtn     { background: #f59e0b; color: white; }
+    #longerBtn   { background: #8b5cf6; color: white; display: none; }
 
-    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(145,70,255,0.4); }
+    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
     #message {
       font-size: 1.45em;
@@ -130,62 +121,19 @@
       min-height: 1.6em;
       font-weight: bold;
     }
-    .success { color: #56d364; }
-    .fail    { color: #f85149; }
-    .reveal  { color: #f0c674; font-style: italic; }
-
-    /* Tabelka prób – pojawia się wiersz po wierszu */
-    .history-table {
-      width: 100%;
-      margin: 24px auto 0;
-      border-collapse: collapse;
-      background: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      overflow: hidden;
-      font-size: 0.95em;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    .history-table.visible {
-      opacity: 1;
-    }
-    .history-table th, .history-table td {
-      padding: 10px 12px;
-      border: 1px solid #30363d;
-      text-align: center;
-    }
-    .history-table th {
-      background: #21262d;
-      color: #c9d1d9;
-      font-weight: bold;
-    }
-    .history-table tr:nth-child(even) {
-      background: rgba(13,17,23,0.7);
-    }
-    .history-table .current {
-      background: rgba(145,70,255,0.12);
-      font-weight: bold;
-    }
-    .history-table tr {
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.4s ease;
-    }
-    .history-table tr.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .success { color: #34d399; }
+    .fail    { color: #f87171; }
+    .reveal  { color: #fbbf24; font-style: italic; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Jaka to melodia – edycja Twitch</h1>
+  <h1>Co To Za Hit?</h1>
 
   <div class="audio-bars" id="bars"></div>
 
-  <div id="status">Ładowanie...</div>
+  <div id="status">Ładowanie playlisty...</div>
 
   <div class="input-wrapper">
     <input type="text" id="guess" placeholder="Wpisz tytuł / artystę..." autocomplete="off">
@@ -193,28 +141,16 @@
   </div>
 
   <div class="buttons">
-    <button id="checkBtn" onclick="checkGuess()">Sprawdź</button>
+    <button id="checkBtn"  onclick="checkGuess()">Sprawdź</button>
     <button id="replayBtn" onclick="playClip()">Odtwórz ponownie</button>
-    <button id="skipBtn" onclick="skipSong()">Pomiń</button>
+    <button id="skipBtn"   onclick="skipSong()">Pomiń</button>
     <button id="longerBtn" onclick="nextLevel()">Dłuższy fragment</button>
   </div>
 
   <div id="message"></div>
-
-  <!-- Tabelka prób – zaczyna pusta, wiersze pojawiają się po kolei -->
-  <table class="history-table" id="historyTable">
-    <thead>
-      <tr>
-        <th>Próba</th>
-        <th>Długość</th>
-        <th>Twój wpis</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
 </div>
 
-<div id="player" style="width:1px;height:1px;overflow:hidden;position:absolute;"></div>
+<div id="player" style="width:0;height:0;overflow:hidden;position:absolute;"></div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
@@ -222,16 +158,17 @@ const API_KEY = 'AIzaSyCjdRB_MCy02NB4ceFmQtDnecvt4HdWskQ';
 
 let player = null;
 let currentSong = {};
+let allPlaylistSongs = []; // wszystkie utwory z playlisty
 let clipLengths = [0.8, 2, 4, 7, 12, 18];
 let currentAttempt = 0;
 let attemptsLeft = 6;
 let hasUserInteracted = false;
-let recentSongs = [];
-let currentStartTime = null;
 
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
 const barsCount = 10;
 const MAX_SUGGESTIONS = 30;
+
+const PLAYLIST_ID = 'PL4fGSI1pDJn68fmsRw9f6g-NzU5UA45v1'; // Twoja playlista
 
 function initBars() {
   const container = document.getElementById('bars');
@@ -275,132 +212,120 @@ function nextLevel() {
   }
 }
 
-function addToRecent(song) {
-  if (!song || !song.rawTitle) return;
-  recentSongs.unshift({
-    rawTitle: song.rawTitle,
-    rawArtist: song.rawArtist || '???',
-    cleanTitle: normalizeForCompare(song.rawTitle),
-    cleanArtist: normalizeForCompare(song.rawArtist || '')
-  });
-  if (recentSongs.length > MAX_SUGGESTIONS) recentSongs.pop();
+function cleanText(text) {
+  if (!text) return '';
+  return text.toLowerCase()
+    .replace(/official|video|audio|lyric|teledysk|klip|hd|4k|vevo|feat\.?|ft\.?|×|&|\/|prod\.?|remix|nowość|nowy|202[3-6]|clip|edit/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-function showSuggestions(query) {
-  const div = document.getElementById('suggestions');
-  div.innerHTML = '';
-
-  if (!query || query.length < 1) {
-    div.style.display = 'none';
-    return;
-  }
-
-  const lower = query.toLowerCase();
-  const matches = recentSongs.filter(s =>
-    s.cleanTitle.includes(lower) ||
-    s.cleanArtist.includes(lower) ||
-    s.rawTitle.toLowerCase().includes(lower) ||
-    s.rawArtist.toLowerCase().includes(lower)
-  );
-
-  if (matches.length === 0) {
-    div.style.display = 'none';
-    return;
-  }
-
-  matches.slice(0, MAX_SUGGESTIONS).forEach(match => {
-    const el = document.createElement('div');
-    el.className = 'suggestion';
-    el.textContent = `${match.rawArtist} – ${match.rawTitle}`.trim().replace(/\s+/g, ' ');
-    el.onclick = () => {
-      document.getElementById('guess').value = el.textContent;
-      div.style.display = 'none';
-      checkGuess();
-    };
-    div.appendChild(el);
-  });
-
-  div.style.display = 'block';
-}
-
-function hideSuggestions() {
-  document.getElementById('suggestions').style.display = 'none';
+function normalizeForCompare(str) {
+  return cleanText(str).replace(/[^a-z0-9ąęłńóśźżąć ]/gi, '').replace(/\s+/g, ' ');
 }
 
 function onYouTubeIframeAPIReady() {
   initBars();
-  loadSong();
+  loadPlaylistSongs();
 }
 
-async function loadSong() {
+async function loadPlaylistSongs() {
   const status = document.getElementById('status');
-  status.textContent = 'Ładowanie...';
+  status.textContent = 'Pobieranie playlisty...';
 
-  currentStartTime = null;
-
-  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&order=viewCount&q=hit+OR+muzyka+OR+2025+OR+2026+OR+nowość+OR+polska&maxResults=20&regionCode=PL&relevanceLanguage=pl&key=${API_KEY}`;
+  allPlaylistSongs = [];
 
   try {
-    const res = await fetch(url);
-    const data = await res.json();
+    let nextPageToken = '';
+    do {
+      const url = `https://www.googleapis.com/youtube/v3/playlistItems?` +
+                  `part=snippet` +
+                  `&playlistId=${PLAYLIST_ID}` +
+                  `&maxResults=50` +
+                  `&pageToken=${nextPageToken}` +
+                  `&key=${API_KEY}`;
 
-    if (data.error || !data.items || data.items.length === 0) {
-      status.textContent = 'Problem z API';
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.error) {
+        status.textContent = 'Błąd API: ' + (data.error.message || 'nieznany');
+        console.error(data.error);
+        return;
+      }
+
+      if (data.items) {
+        data.items.forEach(item => {
+          const title = item.snippet.title || '';
+          const artist = item.snippet.videoOwnerChannelTitle || '';
+          allPlaylistSongs.push({
+            videoId: item.snippet.resourceId.videoId,
+            rawTitle: title,
+            rawArtist: artist,
+            cleanTitle: normalizeForCompare(title),
+            cleanArtist: normalizeForCompare(artist)
+          });
+        });
+      }
+
+      nextPageToken = data.nextPageToken || '';
+    } while (nextPageToken);
+
+    if (allPlaylistSongs.length === 0) {
+      status.textContent = 'Playlista pusta lub niedostępna';
       return;
     }
 
-    const idx = Math.floor(Math.random() * data.items.length);
-    const video = data.items[idx];
-
-    currentSong = {
-      videoId: video.id.videoId,
-      rawTitle: video.snippet.title || '???',
-      rawArtist: video.snippet.channelTitle || '???',
-      cleanTitle: normalizeForCompare(video.snippet.title || ''),
-      cleanArtist: normalizeForCompare(video.snippet.channelTitle || '')
-    };
-
-    addToRecent(currentSong);
-
-    status.textContent = 'Słuchaj...';
-
-    if (player) {
-      player.loadVideoById(currentSong.videoId);
-    } else {
-      player = new YT.Player('player', {
-        height: '1',
-        width: '1',
-        videoId: currentSong.videoId,
-        playerVars: {
-          autoplay: 0,
-          controls: 0,
-          modestbranding: 1,
-          rel: 0,
-          fs: 0,
-          mute: 1,
-          enablejsapi: 1,
-          playsinline: 1,
-          disablekb: 1,
-          origin: window.location.origin || 'https://www.youtube.com'
-        },
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': e => {
-            if (e.data === YT.PlayerState.PLAYING && hasUserInteracted) {
-              player.unMute();
-            }
-          }
-        }
-      });
-    }
-
-    resetGame();
-    setTimeout(() => playClip(true), 1400);
+    status.textContent = `Załadowano ${allPlaylistSongs.length} utworów – start!`;
+    loadNextSong();
 
   } catch (err) {
     console.error(err);
-    status.textContent = 'Błąd ładowania';
+    status.textContent = 'Błąd ładowania playlisty';
   }
+}
+
+function loadNextSong() {
+  if (allPlaylistSongs.length === 0) {
+    document.getElementById('status').textContent = 'Brak utworów';
+    return;
+  }
+
+  const idx = Math.floor(Math.random() * allPlaylistSongs.length);
+  currentSong = allPlaylistSongs[idx];
+
+  document.getElementById('status').textContent = 'Słuchaj...';
+
+  if (player) {
+    player.loadVideoById(currentSong.videoId);
+  } else {
+    player = new YT.Player('player', {
+      height: '0',
+      width: '0',
+      videoId: currentSong.videoId,
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        modestbranding: 1,
+        rel: 0,
+        fs: 0,
+        mute: 1,
+        enablejsapi: 1,
+        origin: window.location.origin || 'https://www.youtube.com'
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': e => {
+          if (e.data === YT.PlayerState.PLAYING && hasUserInteracted) {
+            player.unMute();
+          }
+        }
+      }
+    });
+  }
+
+  resetGame();
+  setTimeout(() => playClip(true), 1400);
 }
 
 function onPlayerReady(event) {
@@ -412,24 +337,10 @@ function playClip(isFirst = false) {
 
   if (hasUserInteracted) player.unMute();
 
-  let startTime;
-
-  if (isFirst || currentStartTime === null) {
-    startTime = Math.max(10, Math.floor(Math.random() * 140));
-    currentStartTime = startTime;
-  } else {
-    startTime = currentStartTime;
-  }
-
-  player.seekTo(startTime, true);
-
-  player.playVideo();
-
-  setTimeout(() => {
-    player.seekTo(startTime, true);
-  }, 200);
-
   const duration = isFirst ? clipLengths[0] : clipLengths[currentAttempt];
+  const randomStart = Math.max(10, Math.floor(Math.random() * 140));
+  player.seekTo(randomStart, true);
+  player.playVideo();
 
   let elapsed = 0;
   const interval = setInterval(() => {
@@ -445,7 +356,7 @@ function playClip(isFirst = false) {
     }
   }, 200);
 
-  document.getElementById('status').textContent = `Odtwarzam ${duration}s od ${startTime.toFixed(1)}s`;
+  document.getElementById('status').textContent = `Odtwarzam ${duration}s...`;
 }
 
 function checkGuess() {
@@ -473,10 +384,7 @@ function checkGuess() {
     msg.innerHTML += '<br><span class="fail">Nie tym razem...</span>';
   }
 
-  // Dodajemy wiersz do tabelki dopiero teraz
-  addHistoryRow(currentAttempt + 1, clipLengths[currentAttempt], val, isCorrect);
-
-  setTimeout(loadSong, 3000);
+  setTimeout(loadNextSong, 3000);
 
   document.getElementById('guess').value = '';
   hideSuggestions();
@@ -486,11 +394,7 @@ function skipSong() {
   const msg = document.getElementById('message');
   revealSong();
   msg.innerHTML += '<br><span class="fail">Pominięto</span>';
-
-  // Dodajemy wiersz dla pominięcia
-  addHistoryRow(currentAttempt + 1, clipLengths[currentAttempt], 'pominięto', false);
-
-  setTimeout(loadSong, 3000);
+  setTimeout(loadNextSong, 3000);
 }
 
 function revealSong() {
@@ -514,36 +418,6 @@ function revealSong() {
   msg.innerHTML = `<span class="reveal">${artist} – ${title}</span>`;
 }
 
-function addHistoryRow(attempt, duration, guessText, isCorrect) {
-  const tbody = document.querySelector('#historyTable tbody');
-  const tr = document.createElement('tr');
-
-  tr.innerHTML = `
-    <td>${attempt}</td>
-    <td>${duration}s</td>
-    <td>${guessText || '(brak wpisu)'}</td>
-  `;
-
-  if (isCorrect) {
-    tr.style.background = 'rgba(86,211,100,0.15)';
-  } else if (guessText !== 'pominięto') {
-    tr.style.background = 'rgba(248,81,73,0.15)';
-  }
-
-  // Pokazujemy wiersz z animacją
-  tr.style.opacity = '0';
-  tr.style.transform = 'translateY(10px)';
-  tbody.appendChild(tr);
-
-  // Najpierw pokazujemy całą tabelkę (jeśli to pierwszy wiersz)
-  document.getElementById('historyTable').classList.add('visible');
-
-  // Po chwili animacja wiersza
-  setTimeout(() => {
-    tr.classList.add('visible');
-  }, 50);
-}
-
 function resetGame() {
   currentAttempt = 0;
   attemptsLeft = 6;
@@ -553,11 +427,6 @@ function resetGame() {
   updateBars(0);
   document.getElementById('longerBtn').style.display = 'none';
   hideSuggestions();
-
-  // Czyścimy tabelkę i chowamy ją
-  const tbody = document.querySelector('#historyTable tbody');
-  tbody.innerHTML = '';
-  document.getElementById('historyTable').classList.remove('visible');
 }
 
 // Podpowiedzi – od 1 litery
@@ -586,7 +455,7 @@ function showSuggestions(query) {
   }
 
   const lower = query.toLowerCase();
-  const matches = recentSongs.filter(s =>
+  const matches = allPlaylistSongs.filter(s =>
     s.cleanTitle.includes(lower) ||
     s.cleanArtist.includes(lower) ||
     s.rawTitle.toLowerCase().includes(lower) ||
