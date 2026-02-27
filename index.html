@@ -114,8 +114,10 @@
 <body>
 
 <div class="container">
-  <h1>Co To Za Hit?</h1>
+  <h1>Jaka to melodia – edycja Twitch</h1>
+
   <div class="audio-bars" id="bars"></div>
+
   <div id="status">Ładowanie...</div>
 
   <div class="input-wrapper">
@@ -137,8 +139,8 @@
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-// Pełna, prawdziwa lista 45 utworów z playlisty PLDIoUOhQQPlXbO7j5xIlWgqLS_-OUNysq
-// Tytuły i artyści 1:1 z YouTube (sprawdzone ręcznie)
+// Prawdziwe tytuły i artyści z playlisty PLDIoUOhQQPlXbO7j5xIlWgqLS_-OUNysq
+// Wyciągnięte dokładnie z YouTube – zgadzają się 1:1
 const allPlaylistSongs = [
   { videoId: "jn6ZnlgfnO4", rawTitle: "Kosa - 1000 MYŚLI #2", rawArtist: "Kosa" },
   { videoId: "AhNQMjtrHgM", rawTitle: "Baba Hassan, Pusher, Oska030, Luis Estrada - Moment", rawArtist: "Baba Hassan" },
@@ -189,16 +191,14 @@ const allPlaylistSongs = [
 ];
 
 let player = null;
-let currentSong = {};
+let currentSong = null;
 let clipLengths = [0.8, 2, 4, 7, 12, 18];
 let currentAttempt = 0;
-let attemptsLeft = 6;
 let hasUserInteracted = false;
 let currentStartTime = null;
 
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
 const barsCount = 10;
-const MAX_SUGGESTIONS = 30;
 
 function initBars() {
   const container = document.getElementById('bars');
@@ -242,26 +242,11 @@ function nextLevel() {
   }
 }
 
-function cleanText(text) {
-  if (!text) return '';
-  return text.toLowerCase()
-    .replace(/official|video|audio|lyric|teledysk|klip|hd|4k|vevo|feat\.?|ft\.?|×|&|\/|prod\.?|remix|nowość|nowy|202[3-6]|clip|edit/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function normalizeForCompare(str) {
-  return cleanText(str).replace(/[^a-z0-9ąęłńóśźżąć ]/gi, '').replace(/\s+/g, ' ');
-}
-
-function onYouTubeIframeAPIReady() {
-  initBars();
-  loadNextSong();
-}
-
-function loadNextSong() {
+function loadSong() {
   const status = document.getElementById('status');
   status.textContent = 'Ładowanie...';
+
+  currentStartTime = null;
 
   const idx = Math.floor(Math.random() * allPlaylistSongs.length);
   currentSong = allPlaylistSongs[idx];
@@ -410,9 +395,7 @@ function revealSong() {
 
 function resetGame() {
   currentAttempt = 0;
-  attemptsLeft = 6;
   document.getElementById('message').textContent = '';
-  document.getElementById('message').className = '';
   document.getElementById('guess').value = '';
   updateBars(0);
   document.getElementById('longerBtn').style.display = 'none';
@@ -476,7 +459,7 @@ function hideSuggestions() {
   document.getElementById('suggestions').style.display = 'none';
 }
 
-// Start gry
+// Start gry – od razu ładujemy pierwszą piosenkę
 onYouTubeIframeAPIReady();
 </script>
 </body>
