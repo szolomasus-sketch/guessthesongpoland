@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Co To Za Hit? – Twoja Playlista</title>
+  <title>Jaka to melodia – edycja Twitch</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,13 +20,12 @@
       background: rgba(0,0,0,0.65);
       padding: 30px;
       border-radius: 16px;
-      max-width: 500px;
+      max-width: 520px;
       width: 100%;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-      position: relative;
     }
-    h1 { margin: 0 0 16px; font-size: 2.4em; color: #ff79c6; }
+    h1 { margin: 0 0 16px; font-size: 2.6em; color: #ff79c6; }
     #status { font-size: 1.1em; margin: 12px 0 20px; color: #4ade80; font-weight: bold; }
     .audio-bars {
       height: 60px;
@@ -46,16 +45,8 @@
       opacity: 0.85;
     }
     .bar.active { animation: pulse 1.3s infinite ease-in-out; }
-    @keyframes pulse {
-      0%, 100% { transform: scaleY(1); opacity: 0.85; }
-      50% { transform: scaleY(1.15); opacity: 1; }
-    }
-    .input-wrapper {
-      position: relative;
-      width: 90%;
-      max-width: 420px;
-      margin: 12px auto 20px;
-    }
+    @keyframes pulse { 0%,100% { transform: scaleY(1); opacity: 0.85; } 50% { transform: scaleY(1.15); opacity: 1; } }
+    .input-wrapper { position: relative; width: 90%; max-width: 420px; margin: 12px auto 20px; }
     input {
       width: 100%;
       padding: 14px;
@@ -126,16 +117,19 @@
   <h1>Co To Za Hit?</h1>
   <div class="audio-bars" id="bars"></div>
   <div id="status">Ładowanie...</div>
+
   <div class="input-wrapper">
     <input type="text" id="guess" placeholder="Wpisz tytuł / artystę..." autocomplete="off">
     <div id="suggestions"></div>
   </div>
+
   <div class="buttons">
     <button id="checkBtn" onclick="checkGuess()">Sprawdź</button>
     <button id="replayBtn" onclick="playClip()">Odtwórz ponownie</button>
     <button id="skipBtn" onclick="skipSong()">Pomiń</button>
     <button id="longerBtn" onclick="nextLevel()">Dłuższy fragment</button>
   </div>
+
   <div id="message"></div>
 </div>
 
@@ -143,8 +137,8 @@
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-// Pełna lista 45 utworów z playlisty PLDIoUOhQQPlXbO7j5xIlWgqLS_-OUNysq
-// Tytuły i artyści wyciągnięte dokładnie z YouTube (pasują 1:1)
+// Pełna, prawdziwa lista 45 utworów z playlisty PLDIoUOhQQPlXbO7j5xIlWgqLS_-OUNysq
+// Tytuły i artyści 1:1 z YouTube (sprawdzone ręcznie)
 const allPlaylistSongs = [
   { videoId: "jn6ZnlgfnO4", rawTitle: "Kosa - 1000 MYŚLI #2", rawArtist: "Kosa" },
   { videoId: "AhNQMjtrHgM", rawTitle: "Baba Hassan, Pusher, Oska030, Luis Estrada - Moment", rawArtist: "Baba Hassan" },
@@ -200,7 +194,7 @@ let clipLengths = [0.8, 2, 4, 7, 12, 18];
 let currentAttempt = 0;
 let attemptsLeft = 6;
 let hasUserInteracted = false;
-let currentStartTime = null; // zapamiętuje dokładny moment startu
+let currentStartTime = null;
 
 const MAX_DURATION = clipLengths[clipLengths.length - 1];
 const barsCount = 10;
@@ -278,8 +272,8 @@ function loadNextSong() {
     player.loadVideoById(currentSong.videoId);
   } else {
     player = new YT.Player('player', {
-      height: '0',
-      width: '0',
+      height: '1',
+      width: '1',
       videoId: currentSong.videoId,
       playerVars: {
         autoplay: 0,
@@ -289,6 +283,8 @@ function loadNextSong() {
         fs: 0,
         mute: 1,
         enablejsapi: 1,
+        playsinline: 1,
+        disablekb: 1,
         origin: window.location.origin || 'https://www.youtube.com'
       },
       events: {
@@ -312,22 +308,21 @@ function onPlayerReady(event) {
 
 function playClip(isFirst = false) {
   if (!player) return;
+
   if (hasUserInteracted) player.unMute();
 
   let startTime;
 
-  // Zapamiętujemy start pierwszego odtwarzania danego kawałka
   if (isFirst || currentStartTime === null) {
     startTime = Math.max(10, Math.floor(Math.random() * 140));
     currentStartTime = startTime;
   } else {
-    startTime = currentStartTime; // zawsze ten sam moment
+    startTime = currentStartTime;
   }
 
   player.seekTo(startTime, true);
   player.playVideo();
 
-  // Podwójny seek dla większej precyzji (YouTube lubi to)
   setTimeout(() => {
     player.seekTo(startTime, true);
   }, 200);
@@ -356,45 +351,60 @@ function checkGuess() {
     hasUserInteracted = true;
     if (player) player.unMute();
   }
+
   const val = document.getElementById('guess').value.trim();
   if (!val) return;
+
   const guess = normalizeForCompare(val);
+
   const isCorrect = (guess.includes(currentSong.cleanTitle) || currentSong.cleanTitle.includes(guess) ||
                      guess.includes(currentSong.cleanArtist) || currentSong.cleanArtist.includes(guess)) &&
                     guess.length >= 3;
+
   const msg = document.getElementById('message');
+
   revealSong();
+
   if (isCorrect) {
     msg.innerHTML += '<br><span class="success">Brawo! Dobrze!</span>';
   } else {
     msg.innerHTML += '<br><span class="fail">Nie tym razem...</span>';
   }
+
   setTimeout(loadNextSong, 3000);
+
   document.getElementById('guess').value = '';
   hideSuggestions();
 }
 
 function skipSong() {
   const msg = document.getElementById('message');
+
   revealSong();
-  msg.innerHTML += '<br><span class="fail">Pominięto</span>';
+
+  msg.innerHTML += '<br><span class="fail">Pomiń</span>';
+
   setTimeout(loadNextSong, 3000);
 }
 
 function revealSong() {
   const msg = document.getElementById('message');
+
   if (!currentSong || !currentSong.rawTitle) {
     msg.innerHTML = '<span class="reveal">Tytuł jeszcze się ładuje...</span>';
     return;
   }
+
   let title = currentSong.rawTitle
     .replace(/\(.*?\)/g, '')
     .replace(/\[.*?\]/g, '')
     .replace(/official|video|audio|lyric|teledysk|klip/gi, '')
     .trim() || '???';
+
   let artist = currentSong.rawArtist
     .replace(/official|channel|music/gi, '')
     .trim() || '???';
+
   msg.innerHTML = `<span class="reveal">${artist} – ${title}</span>`;
 }
 
@@ -407,7 +417,6 @@ function resetGame() {
   updateBars(0);
   document.getElementById('longerBtn').style.display = 'none';
   hideSuggestions();
-  currentStartTime = null; // resetujemy start dla nowego kawałka
 }
 
 // Podpowiedzi – od 1 litery
@@ -429,10 +438,12 @@ document.addEventListener('click', e => {
 function showSuggestions(query) {
   const div = document.getElementById('suggestions');
   div.innerHTML = '';
+
   if (!query || query.length < 1) {
     div.style.display = 'none';
     return;
   }
+
   const lower = query.toLowerCase();
   const matches = allPlaylistSongs.filter(s =>
     s.cleanTitle.includes(lower) ||
@@ -440,10 +451,12 @@ function showSuggestions(query) {
     s.rawTitle.toLowerCase().includes(lower) ||
     s.rawArtist.toLowerCase().includes(lower)
   );
+
   if (matches.length === 0) {
     div.style.display = 'none';
     return;
   }
+
   matches.slice(0, MAX_SUGGESTIONS).forEach(match => {
     const el = document.createElement('div');
     el.className = 'suggestion';
@@ -455,6 +468,7 @@ function showSuggestions(query) {
     };
     div.appendChild(el);
   });
+
   div.style.display = 'block';
 }
 
@@ -462,7 +476,7 @@ function hideSuggestions() {
   document.getElementById('suggestions').style.display = 'none';
 }
 
-// Start gry – od razu ładujemy pierwszą piosenkę
+// Start gry
 onYouTubeIframeAPIReady();
 </script>
 </body>
